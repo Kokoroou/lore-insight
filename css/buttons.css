@@ -1,0 +1,41 @@
+/* ── Buttons ─────────────────────────────────────────── */
+.btn-primary {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 14px;
+  background: var(--a);
+  color: #09080a;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: .02em;
+  border-radius: var(--r);
+  transition: opacity .15s, box-shadow .15s;
+  white-space: nowrap;
+}
+.btn-primary:hover { opacity: .88; box-shadow: 0 0 16px var(--a40); }
+.btn-ghost {
+  display: flex; align-items: center; gap: 5px;
+  padding: 5px 11px;
+  background: var(--s2);
+  border: 1px solid var(--bd);
+  color: var(--t2);
+  font-size: 12px;
+  border-radius: var(--r);
+  transition: border-color .15s, color .15s;
+  white-space: nowrap;
+}
+.btn-ghost:hover { border-color: var(--bd2); color: var(--t); }
+.btn-icon {
+  display: flex; align-items: center; justify-content: center;
+  width: 30px; height: 30px;
+  background: var(--s2);
+  border: 1px solid var(--bd);
+  color: var(--t2);
+  border-radius: var(--r);
+  transition: border-color .15s, color .15s, background .15s;
+  flex-shrink: 0;
+}
+.btn-icon:hover { border-color: var(--bd2); color: var(--t); background: var(--s3); }
+.btn-icon.active { background: var(--a10); border-color: var(--a40); color: var(--a); }
+.icon-moon { display: none; }
+html[data-theme="light"] .icon-sun  { display: none; }
+html[data-theme="light"] .icon-moon { display: block; }

@@ -1,0 +1,60 @@
+/* ── Sidebar ─────────────────────────────────────────── */
+#sidebar {
+  width: var(--sw); flex-shrink: 0;
+  background: var(--s1); border-right: 1px solid var(--bd);
+  overflow-y: auto; display: flex; flex-direction: column;
+  transition: width .2s, border-color .2s;
+}
+#sidebar.hidden { width: 0 !important; border-right-color: transparent; overflow: hidden; }
+#sb-header {
+  padding: 10px 12px 6px;
+  font-size: 10px; font-weight: 700; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--t3); flex-shrink: 0;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.sb-section {
+  font-size: 10px; font-weight: 700; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--t3);
+  padding: 8px 12px 4px;
+}
+.sb-item {
+  display: flex; align-items: center; gap: 7px;
+  padding: 5px 12px; cursor: pointer; user-select: none;
+  border-left: 2px solid transparent;
+  transition: background .12s, border-color .12s;
+  font-size: 12px; color: var(--t2);
+}
+.sb-item:hover { background: var(--s3); color: var(--t); }
+.sb-item.active { background: var(--a10); border-left-color: var(--a); color: var(--a); }
+.sb-count {
+  margin-left: auto; font-size: 10px; color: var(--t3);
+  background: var(--s2); padding: 1px 5px; border-radius: 9px;
+  border: 1px solid var(--bd); flex-shrink: 0;
+}
+.sb-item.active .sb-count { background: var(--a10); border-color: var(--a40); color: var(--a); }
+#sb-resizer {
+  width: 4px; flex-shrink: 0; cursor: col-resize;
+  background: transparent; transition: background .15s; position: relative;
+}
+#sb-resizer::before { content: ''; position: absolute; inset: 0; left: -3px; right: -3px; }
+#sb-resizer:hover, #sb-resizer.dragging { background: var(--a40); }
+#sb-resizer.hidden { display: none; }
+
+/* ── Sidebar tree ────────────────────────────────────── */
+.sb-folder {
+  display: flex; align-items: center; gap: 6px;
+  padding: 4px 12px; cursor: pointer; user-select: none;
+  font-size: 11px; font-weight: 700; letter-spacing: .04em;
+  color: var(--t3); text-transform: none;
+  transition: color .12s;
+}
+.sb-folder:hover { color: var(--t2); }
+.sb-folder-arrow {
+  font-size: 9px; flex-shrink: 0;
+  transition: transform .15s;
+  color: var(--t3);
+}
+.sb-folder.collapsed > .sb-folder-arrow { transform: rotate(-90deg); }
+.sb-folder-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+.sb-children { overflow: hidden; }
+.sb-folder.collapsed + .sb-children { display: none; }

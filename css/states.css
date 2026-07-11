@@ -1,0 +1,26 @@
+/* ── Empty state (no events / no nodes) ─────────────── */
+.empty-graph {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 8px; color: var(--t3);
+}
+.empty-graph-icon { font-size: 32px; }
+.empty-graph-text { font-size: 12px; }
+
+/* ── Dimmed event cards ──────────────────────────────── */
+.ev-card.ev-empty {
+  opacity: .55;
+  border-style: dashed;
+}
+.ev-card.ev-empty .ev-card-meta::after {
+  content: ' · no flow';
+  color: var(--t3);
+}
+
+/* ── Empty event notice ──────────────────────────────── */
+.empty-event-notice {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 8px; padding: 40px 24px; text-align: center;
+}
+.empty-event-notice-icon { font-size: 28px; opacity: .5; }
+.empty-event-notice-title { font-size: 12px; font-weight: 600; color: var(--t2); }
+.empty-event-notice-sub { font-size: 11px; color: var(--t3); max-width: 220px; line-height: 1.6; }

@@ -1,0 +1,8 @@
+/* ── App layout ──────────────────────────────────────── */
+#layout {
+  position: relative; z-index: 1;
+  display: flex; flex: 1; overflow: hidden;
+}
+
+/* ── Main area ───────────────────────────────────────── */
+#main { flex: 1; overflow: hidden; display: flex; flex-direction: column; }

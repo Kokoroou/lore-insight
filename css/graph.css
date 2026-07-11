@@ -1,0 +1,65 @@
+/* ── Graph view ──────────────────────────────────────── */
+#graph-view { flex: 1; display: none; flex-direction: column; overflow: hidden; }
+#graph-view.visible { display: flex; }
+
+/* Graph toolbar */
+#graph-toolbar {
+  display: flex; align-items: center; gap: 8px; padding: 6px 12px;
+  background: var(--s1); border-bottom: 1px solid var(--bd); flex-shrink: 0;
+}
+#event-breadcrumb { font-size: 12px; color: var(--t2); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#event-breadcrumb span { color: var(--t); }
+#page-tabs { display: flex; gap: 4px; }
+.page-tab {
+  padding: 3px 10px; font-size: 11px; border-radius: var(--r);
+  background: var(--s2); border: 1px solid var(--bd); color: var(--t2);
+  cursor: pointer; transition: all .12s;
+}
+.page-tab:hover { border-color: var(--bd2); color: var(--t); }
+.page-tab.active { background: var(--a10); border-color: var(--a40); color: var(--a); font-weight: 600; }
+
+/* Graph canvas area */
+#graph-wrap { flex: 1; display: flex; overflow: hidden; position: relative; }
+#cy { flex: 1; background: var(--bg); }
+
+/* Graph controls (bottom-right) */
+#graph-controls {
+  position: absolute; bottom: 16px; right: 16px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+
+/* Event picker overlay (shown when map selected, no event) */
+#event-picker {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg); z-index: 5;
+}
+#event-picker.hidden { display: none; }
+#event-picker-inner {
+  max-width: 500px; width: 100%; padding: 24px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.ep-title { font-size: 13px; font-weight: 600; color: var(--t); }
+.ep-sub   { font-size: 11px; color: var(--t2); }
+#event-list-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 6px;
+  max-height: 320px; overflow-y: auto;
+}
+.ev-card {
+  background: var(--s1); border: 1px solid var(--bd); border-radius: var(--r);
+  padding: 10px 12px; cursor: pointer; transition: all .12s;
+}
+.ev-card:hover { border-color: var(--a40); background: var(--a10); }
+.ev-card-name { font-size: 12px; font-weight: 600; color: var(--t); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ev-card-meta { font-size: 10px; color: var(--t3); margin-top: 2px; }
+
+/* Toolbar download button */
+#btn-download {
+  display: none; align-items: center; gap: 5px;
+  padding: 3px 10px; font-size: 11px; font-weight: 600;
+  background: var(--s2); border: 1px solid var(--bd); color: var(--t2);
+  border-radius: var(--r); transition: all .12s; white-space: nowrap; margin-left: auto;
+}
+#btn-download.visible { display: flex; }
+#btn-download:hover { border-color: var(--a40); color: var(--a); background: var(--a10); }
+#btn-download svg { flex-shrink: 0; }
