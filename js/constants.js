@@ -29,3 +29,11 @@ const NODE_COLORS = {
   label:     { bg: '#071a10', border: '#34d399', text: '#6ee7b7' },
   jump:      { bg: '#1c0d04', border: '#fb923c', text: '#fdba74' },
 };
+
+const NODE_COLORS_LIGHT = {
+  dialogue:  { bg: '#fef9ee', border: '#d97706', text: '#44300a' },
+  choice:    { bg: '#eff6ff', border: '#2563eb', text: '#1e3a5f' },
+  condition: { bg: '#f5f3ff', border: '#7c3aed', text: '#3b1d8c' },
+  label:     { bg: '#ecfdf5', border: '#059669', text: '#064e3b' },
+  jump:      { bg: '#fff7ed', border: '#ea580c', text: '#7c2d12' },
+};

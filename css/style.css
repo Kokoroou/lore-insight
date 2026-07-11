@@ -303,7 +303,11 @@ html[data-theme="light"] .icon-moon { display: block; }
   display: flex; flex-direction: column; overflow: hidden;
   transition: width .2s;
 }
-#detail-panel.hidden { width: 0; border-left-color: transparent; overflow: hidden; }
+#detail-panel.hidden { width: 32px; overflow: hidden; }
+#detail-panel.hidden #detail-body { display: none; }
+#detail-panel.hidden #detail-header { border-bottom: none; padding: 9px 1px; justify-content: center; }
+#detail-panel.hidden #detail-header-title { display: none; }
+#detail-panel.hidden #detail-toggle svg { transform: scaleX(-1); }
 #detail-header {
   padding: 10px 14px 8px; border-bottom: 1px solid var(--bd); flex-shrink: 0;
   display: flex; align-items: center; justify-content: space-between;
@@ -423,7 +427,7 @@ html[data-theme="light"] .icon-moon { display: block; }
 
 /* ── Dimmed event cards ──────────────────────────────── */
 .ev-card.ev-empty {
-  opacity: .45; pointer-events: none;
+  opacity: .55;
   border-style: dashed;
 }
 .ev-card.ev-empty .ev-card-meta::after {
@@ -482,3 +486,20 @@ html[data-theme="light"] .icon-moon { display: block; }
 #btn-download.visible { display: flex; }
 #btn-download:hover { border-color: var(--a40); color: var(--a); background: var(--a10); }
 #btn-download svg { flex-shrink: 0; }
+
+/* ── Edit button (dialogue inspector) ───────────────── */
+.btn-edit {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 12px; font-size: 11px; font-weight: 700;
+  background: rgba(96,165,250,.12); color: #60a5fa;
+  border: 1px solid rgba(96,165,250,.35);
+  border-radius: var(--r); transition: all .12s; margin-top: 8px;
+}
+.btn-edit:hover { background: rgba(96,165,250,.2); border-color: rgba(96,165,250,.6); }
+
+/* ── Breadcrumb clickable segments ──────────────────── */
+.bc-seg {
+  color: var(--t2); text-decoration: none; cursor: pointer;
+  transition: color .12s;
+}
+.bc-seg:hover { color: var(--t); }
