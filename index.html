@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LoreInsight — RPG Maker Story Flow Visualizer</title>
+<meta name="description" content="Visualize RPG Maker MV/MZ event flow as an interactive node graph. 100% offline — drag your game data folder to get started.">
+<link rel="stylesheet" href="css/style.css">
+<script>
+(function(){
+  var t = localStorage.getItem('li-theme');
+  if (t === 'light') document.documentElement.setAttribute('data-theme','light');
+}());
+</script>
+</head>
+<body>
+
+<!-- ╔════ HEADER ════╗ -->
+<div id="header">
+  <div id="logo">
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+      <rect x="1"  y="1"  width="7" height="7" rx="1.5" fill="var(--a)" opacity=".9"/>
+      <rect x="10" y="1"  width="7" height="7" rx="1.5" fill="var(--a)" opacity=".5"/>
+      <rect x="1"  y="10" width="7" height="7" rx="1.5" fill="var(--a)" opacity=".5"/>
+      <rect x="10" y="10" width="7" height="7" rx="1.5" fill="var(--a)" opacity=".2"/>
+    </svg>
+    Lore<span>Insight</span>
+  </div>
+
+  <div id="header-right">
+    <span id="scan-status"></span>
+
+    <button class="btn-icon" id="about-btn" title="About">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.3"/>
+        <path d="M7 6.5v3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+        <circle cx="7" cy="4.2" r=".75" fill="currentColor"/>
+      </svg>
+    </button>
+
+    <button class="btn-icon" id="theme-toggle" title="Toggle theme">
+      <svg class="icon-sun" width="15" height="15" viewBox="0 0 15 15" fill="none">
+        <circle cx="7.5" cy="7.5" r="2.5" stroke="currentColor" stroke-width="1.3"/>
+        <path d="M7.5 1v1.5M7.5 12.5V14M1 7.5h1.5M12.5 7.5H14M2.93 2.93l1.06 1.06M11.01 11.01l1.06 1.06M2.93 12.07l1.06-1.06M11.01 3.99l1.06-1.06" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+      </svg>
+      <svg class="icon-moon" width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <path d="M12 9.5A5.5 5.5 0 014.5 2a5.5 5.5 0 000 10A5.5 5.5 0 0012 9.5z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+
+    <button class="btn-primary" id="open-btn">
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+        <path d="M1 3.5A1.5 1.5 0 012.5 2H5l1.5 2H11A1.5 1.5 0 0112.5 5.5v5A1.5 1.5 0 0111 12H2.5A1.5 1.5 0 011 10.5V3.5z" stroke="currentColor" stroke-width="1.2" fill="none"/>
+      </svg>
+      Open Folder
+    </button>
+  </div>
+</div>
+
+<!-- ╔════ LAYOUT ════╗ -->
+<div id="layout">
+
+  <!-- ── Sidebar ── -->
+  <div id="sidebar" class="hidden">
+    <div id="sb-header">
+      <span>Navigator</span>
+    </div>
+    <div id="sb-list"></div>
+  </div>
+  <div id="sb-resizer" class="hidden"></div>
+
+  <!-- ── Main ── -->
+  <div id="main">
+
+    <!-- Setup screen -->
+    <div id="setup">
+      <div id="setup-inner">
+        <div class="setup-title">Lore<span>Insight</span></div>
+        <div class="setup-sub">
+          Visualize RPG Maker MV &amp; MZ event flow as an interactive node graph.
+          Drag your game's root folder or <code>data/</code> folder to get started.
+        </div>
+
+        <div id="drop-zone">
+          <div class="dz-icon">🗂</div>
+          <div class="dz-title">Drop game folder here</div>
+          <div class="dz-sub">Supports RPG Maker MV · MZ</div>
+          <button class="btn-primary" id="open-game-btn" style="font-size:13px;padding:8px 24px" onclick="event.stopPropagation();document.getElementById('open-btn').click()">
+            Select Folder
+          </button>
+        </div>
+
+        <div id="setup-status"></div>
+
+        <div class="privacy-note">
+          🔒 <strong>100% offline &amp; private</strong> — all processing happens in your browser, nothing is uploaded.
+        </div>
+      </div>
+    </div>
+
+    <!-- Graph view -->
+    <div id="graph-view">
+
+      <!-- Toolbar -->
+      <div id="graph-toolbar">
+        <button class="btn-icon" id="sidebar-toggle" title="Toggle sidebar">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M2 4h10M2 7h10M2 10h10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+        </button>
+
+        <span id="event-breadcrumb"></span>
+        <div id="page-tabs"></div>
+      </div>
+
+      <!-- Graph + detail -->
+      <div id="graph-wrap">
+
+        <!-- Event picker (shown before selecting an event) -->
+        <div id="event-picker" class="hidden">
+          <div id="event-picker-inner">
+            <div class="ep-title">Select an event to visualize</div>
+            <div class="ep-sub">All events with commands are shown below</div>
+            <div id="event-list-grid"></div>
+          </div>
+        </div>
+
+        <!-- Cytoscape canvas -->
+        <div id="cy"></div>
+
+        <!-- Zoom controls -->
+        <div id="graph-controls">
+          <button class="btn-icon" id="cy-fit" title="Fit to screen">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+              <path d="M1.5 4.5V2A.5.5 0 012 1.5h2.5M11.5 4.5V2a.5.5 0 00-.5-.5H8.5M1.5 8.5V11a.5.5 0 00.5.5h2.5M11.5 8.5V11a.5.5 0 01-.5.5H8.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+            </svg>
+          </button>
+          <button class="btn-icon" id="cy-zoom-in" title="Zoom in">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <circle cx="5.5" cy="5.5" r="3.5" stroke="currentColor" stroke-width="1.3"/>
+              <path d="M8.5 8.5l2.5 2.5M5.5 4v3M4 5.5h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+            </svg>
+          </button>
+          <button class="btn-icon" id="cy-zoom-out" title="Zoom out">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <circle cx="5.5" cy="5.5" r="3.5" stroke="currentColor" stroke-width="1.3"/>
+              <path d="M8.5 8.5l2.5 2.5M4 5.5h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
+
+      </div><!-- /graph-wrap -->
+    </div><!-- /graph-view -->
+
+  </div><!-- /main -->
+
+  <!-- ── Detail panel ── -->
+  <div id="detail-panel">
+    <div id="detail-header">
+      <span id="detail-header-title">Node Inspector</span>
+      <button class="btn-icon active" id="detail-toggle" title="Toggle inspector" style="width:22px;height:22px;border:none;background:none">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+          <path d="M10 6H2M7 3l3 3-3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+    <div id="detail-body">
+      <div class="detail-empty">Click a node to inspect it</div>
+    </div>
+  </div>
+
+</div><!-- /layout -->
+
+<!-- ╔════ ABOUT ════╗ -->
+<div id="about-modal" role="dialog" aria-modal="true">
+  <div id="about-panel">
+    <button id="about-close" title="Close">✕</button>
+
+    <div class="about-logo">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+        <rect x="1"  y="1"  width="7" height="7" rx="1.5" fill="var(--a)" opacity=".9"/>
+        <rect x="10" y="1"  width="7" height="7" rx="1.5" fill="var(--a)" opacity=".5"/>
+        <rect x="1"  y="10" width="7" height="7" rx="1.5" fill="var(--a)" opacity=".5"/>
+        <rect x="10" y="10" width="7" height="7" rx="1.5" fill="var(--a)" opacity=".2"/>
+      </svg>
+      Lore<span>Insight</span>
+    </div>
+    <div class="about-sub">RPG Maker story flow visualizer — 100% client-side</div>
+
+    <div class="about-section">
+      <div class="about-section-title">How to Use</div>
+      <ul class="about-list">
+        <li>Click <strong>Open Folder</strong> and select your RPG Maker game's root folder (or its <code>data/</code> subfolder).</li>
+        <li>Pick a map from the sidebar, then click an event to view its command flow as a node graph.</li>
+        <li>Use page tabs to switch between event pages. Click any node to inspect its full content in the right panel.</li>
+        <li>Common Events are listed below the maps in the sidebar.</li>
+      </ul>
+    </div>
+
+    <div class="about-section">
+      <div class="about-section-title">Node Types</div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div> Dialogue</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#60a5fa"></div> Choice</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#a78bfa"></div> Condition</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#34d399"></div> Label</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#fb923c"></div> Jump</div>
+      </div>
+    </div>
+
+    <div class="about-note">
+      🔒 <strong>100% Private &amp; Offline:</strong> All processing happens entirely in your browser.
+      No files are uploaded, transmitted, or stored on any server.
+    </div>
+  </div>
+</div>
+
+<!-- Drag overlay -->
+<div id="drag-overlay">
+  <div id="drag-inner">
+    <div class="dz-icon">🗂</div>
+    Drop game folder here
+    <span style="font-size:11px;font-weight:400;color:var(--t2)">Release to load</span>
+  </div>
+</div>
+
+<!-- Hidden fallback file input -->
+<input type="file" id="folder-input" webkitdirectory multiple accept="">
+
+<!-- Libraries -->
+<script src="https://unpkg.com/cytoscape@3.29.2/dist/cytoscape.min.js"></script>
+<script src="https://unpkg.com/dagre@0.8.5/dist/dagre.min.js"></script>
+<script src="https://unpkg.com/cytoscape-dagre@2.5.0/cytoscape-dagre.js"></script>
+
+<!-- App -->
+<script src="js/constants.js"></script>
+<script src="js/parser.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>
