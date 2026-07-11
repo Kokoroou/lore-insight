@@ -1,0 +1,83 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Project overview
+
+LoreInsight is a **100% static, client-side** web tool that parses RPG Maker MV/MZ game data files and renders event command flow as an interactive node graph. No build step, no package manager, no server. Open `index.html` in a browser and it runs.
+
+## Running locally
+
+```bash
+# Any static file server works. Python is usually available:
+python -m http.server 8080
+
+# Then open: http://localhost:8080/
+```
+
+For testing, drag the game's `data/` folder onto the page or use the Open Folder button. The `references/` directory contains a sample game for manual verification.
+
+There are no automated tests and no linter. All verification is manual in-browser.
+
+## Architecture
+
+### Data flow
+
+```
+Folder drop / file picker
+  → loadFolder() [app.js]
+      → parse MapInfos.json  → S.mapInfos  (tree metadata)
+      → parse Actors.json    → S.actors[]  (\N[n] resolution)
+      → parse System.json    → S.variables[], S.switches[]
+      → parse CommonEvents.json → S.commonEvents[]
+      → parse Map###.json    → S.maps (Map), S.mapJsons (originals)
+  → renderSidebar() — tree built from mapInfos.parentId/order/expanded
+  → selectMap() → showEventPicker()
+  → selectEvent() → selectPage()
+      → parseEventPage(page.list, prefix) [parser.js]
+      → renderGraph(nodes, edges) [app.js]
+```
+
+### The parser (`js/parser.js`)
+
+`parseEventPage(list, prefix)` is the core function. It walks the flat RPG Maker command array recursively using the `indent` field to determine nesting depth. Returns `{ nodes, edges }`.
+
+- **Dialogue** (code 101 + trailing 401s): collects lines into one node, stores `listStart`/`listEnd` indices for in-place editing
+- **Choices** (102 → 402 branches → 404 end): one choice node, branches recurse one indent deeper
+- **Conditions** (111 → 411 else → 412 end): condition node, true/else branches recurse
+- **Labels** (118) / **Jumps** (119): collected into `labelMap` / `jumpQueue`, resolved as dashed back-edges after the main parse
+
+`describeCondition(params)` reads `S.switches` / `S.variables` / `S.actors` (global `S`) to show human-readable names in condition nodes.
+
+`resolveTextCodes(str)` expands `\N[n]` → actor name and `\V[n]` → variable name (with ID suffix).
+
+### State (`js/app.js` — global `S`)
+
+Key fields:
+- `S.maps` — `Map<mapId, {mapId, mapName, events[]}>` (parsed)
+- `S.mapJsons` — `Map<mapId, json>` — original JSON objects; `page.list` arrays inside are shared references so in-place edits flow through to downloads
+- `S.mapInfos` — `{[id]: {name, parentId, order, expanded}}` — drives sidebar tree
+- `S.currentPage` — the currently rendered `{list}` page object, used by the edit/save flow
+- `S.actors / .variables / .switches` — loaded from game data for name resolution
+
+### Editing & download
+
+When a user edits a dialogue node in the detail panel, `renderDetailEdit()` patches `S.currentPage.list` directly at `nodeData.listStart` / `listEnd`. Because `S.mapJsons` shares the same array references, `downloadCurrentMap()` can simply `JSON.stringify(S.mapJsons.get(mapId))` to export the modified file.
+
+### Sidebar tree
+
+`renderMapTree()` builds a recursive DOM tree from `S.mapInfos`, using the `parentId` hierarchy from MapInfos.json. Folders use `.sb-folder` + `.sb-children`; the collapsed state is toggled via `.collapsed` class (CSS adjacent sibling selector hides children). Default expanded state mirrors the `expanded` flag from MapInfos.json.
+
+### Cytoscape integration
+
+- `initCy()` creates the instance once; subsequent renders call `cy.elements().remove()` then `cy.add(elements)` and re-run the dagre layout
+- `cyStyle()` is called on every render and theme change; it returns the full style array including per-node-type `:selected` rules that produce a colored neon underlay glow
+- Node `glowColor` is stored as element data so the underlay color matches each node type
+- `VISIBLE_CODES` (constants.js) is a Set of the five parseable command codes; used to quickly detect empty events without full parsing
+
+## Conventions
+
+- **No framework, no build.** All JS is plain ES5-compatible (no `import`/`export`). Scripts are loaded in order: `constants.js` → `parser.js` → `app.js`. `parser.js` accesses the global `S` object from `app.js` directly.
+- **`S`** is the single global state object. EL is the DOM ref cache populated at `DOMContentLoaded`.
+- CSS uses design tokens as custom properties (`--bg`, `--s1..s3`, `--bd/bd2`, `--a`, `--t/t2/t3`). Both dark (default) and light themes are defined in `:root` and `html[data-theme="light"]`.
+- RPG Maker MV and MZ differ in where the speaker name lives: MZ puts it in `cmd.parameters[4]`; MV doesn't have it inline. The parser handles this with `|| ''`.

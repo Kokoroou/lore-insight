@@ -401,3 +401,84 @@ html[data-theme="light"] .icon-moon { display: block; }
 
 /* ── Hidden inputs ───────────────────────────────────── */
 #folder-input { display: none; }
+
+/* ── Sidebar tree ────────────────────────────────────── */
+.sb-folder {
+  display: flex; align-items: center; gap: 6px;
+  padding: 4px 12px; cursor: pointer; user-select: none;
+  font-size: 11px; font-weight: 700; letter-spacing: .04em;
+  color: var(--t3); text-transform: none;
+  transition: color .12s;
+}
+.sb-folder:hover { color: var(--t2); }
+.sb-folder-arrow {
+  font-size: 9px; flex-shrink: 0;
+  transition: transform .15s;
+  color: var(--t3);
+}
+.sb-folder.collapsed > .sb-folder-arrow { transform: rotate(-90deg); }
+.sb-folder-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+.sb-children { overflow: hidden; }
+.sb-folder.collapsed + .sb-children { display: none; }
+
+/* ── Dimmed event cards ──────────────────────────────── */
+.ev-card.ev-empty {
+  opacity: .45; pointer-events: none;
+  border-style: dashed;
+}
+.ev-card.ev-empty .ev-card-meta::after {
+  content: ' · no flow';
+  color: var(--t3);
+}
+
+/* ── Empty event notice ──────────────────────────────── */
+.empty-event-notice {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 8px; padding: 40px 24px; text-align: center;
+}
+.empty-event-notice-icon { font-size: 28px; opacity: .5; }
+.empty-event-notice-title { font-size: 12px; font-weight: 600; color: var(--t2); }
+.empty-event-notice-sub { font-size: 11px; color: var(--t3); max-width: 220px; line-height: 1.6; }
+
+/* ── Detail panel edit mode ──────────────────────────── */
+.detail-edit-field {
+  display: flex; flex-direction: column; gap: 4px;
+}
+.detail-edit-label {
+  font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--t3);
+}
+.detail-edit-input {
+  background: var(--s2); border: 1px solid var(--bd2);
+  color: var(--t); font: inherit; font-size: 12px;
+  border-radius: var(--r); padding: 6px 9px;
+  resize: vertical; width: 100%;
+  transition: border-color .12s;
+}
+.detail-edit-input:focus { outline: none; border-color: var(--a); }
+.detail-edit-actions {
+  display: flex; gap: 6px; margin-top: 4px;
+}
+.btn-save {
+  flex: 1; padding: 5px 10px; font-size: 11px; font-weight: 700;
+  background: var(--a); color: #09080a; border-radius: var(--r);
+  transition: opacity .12s;
+}
+.btn-save:hover { opacity: .85; }
+.btn-cancel-edit {
+  padding: 5px 10px; font-size: 11px;
+  background: var(--s2); border: 1px solid var(--bd); color: var(--t2);
+  border-radius: var(--r); transition: border-color .12s, color .12s;
+}
+.btn-cancel-edit:hover { border-color: var(--bd2); color: var(--t); }
+
+/* ── Toolbar download button ─────────────────────────── */
+#btn-download {
+  display: none; align-items: center; gap: 5px;
+  padding: 3px 10px; font-size: 11px; font-weight: 600;
+  background: var(--s2); border: 1px solid var(--bd); color: var(--t2);
+  border-radius: var(--r); transition: all .12s; white-space: nowrap; margin-left: auto;
+}
+#btn-download.visible { display: flex; }
+#btn-download:hover { border-color: var(--a40); color: var(--a); background: var(--a10); }
+#btn-download svg { flex-shrink: 0; }

@@ -2,7 +2,30 @@
 
 function describeCondition(params) {
   if (!params || !params.length) return 'Condition';
-  return `If [${CONDITION_TYPES[params[0]] ?? 'Cond'}]`;
+  const type = params[0];
+  const typeName = CONDITION_TYPES[type] ?? 'Cond';
+  let detail = '';
+  if (type === 0 && typeof S !== 'undefined') {
+    const sw = S.switches[params[1]];
+    detail = sw ? `: ${sw}` : ` #${params[1]}`;
+  } else if (type === 1 && typeof S !== 'undefined') {
+    const v = S.variables[params[1]];
+    detail = v ? `: ${v}` : ` #${params[1]}`;
+  } else if (type === 4 && typeof S !== 'undefined') {
+    const a = S.actors[params[1]];
+    detail = a ? `: ${a}` : ` #${params[1]}`;
+  }
+  return `If [${typeName}${detail}]`;
+}
+
+function resolveTextCodes(str) {
+  if (!str || typeof S === 'undefined') return str || '';
+  return str
+    .replace(/\\[Nn]\[(\d+)\]/g, (_, n) => S.actors[+n] || `\\N[${n}]`)
+    .replace(/\\[Vv]\[(\d+)\]/g, (_, n) => {
+      const name = S.variables[+n];
+      return name ? `${name}(${n})` : `\\V[${n}]`;
+    });
 }
 
 // Parse a single event page command list → { nodes, edges }
@@ -42,16 +65,16 @@ function parseEventPage(list, prefix) {
 
         case CMD.SHOW_TEXT_CFG: {
           const id = nid();
-          // MV: params[4] is speaker name (MZ), params[0] is face filename
           const speaker = (cmd.parameters && cmd.parameters[4]) || '';
           const faceFile = (cmd.parameters && cmd.parameters[0]) || '';
+          const listStart = i;
           const lines = [];
           i++;
           while (i < list.length && list[i].code === CMD.SHOW_TEXT) {
             lines.push(list[i].parameters[0] || '');
             i++;
           }
-          add({ id, type: 'dialogue', speaker, faceFile, lines });
+          add({ id, type: 'dialogue', speaker, faceFile, lines, listStart, listEnd: i });
           break;
         }
 

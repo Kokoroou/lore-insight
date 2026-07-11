@@ -20,6 +20,8 @@ const CONDITION_TYPES = {
   12: 'Script',
 };
 
+const VISIBLE_CODES = new Set([101, 102, 111, 118, 119]);
+
 const NODE_COLORS = {
   dialogue:  { bg: '#111220', border: '#f59e0b', text: '#eeeef6' },
   choice:    { bg: '#0a1729', border: '#60a5fa', text: '#93c5fd' },

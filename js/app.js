@@ -2,11 +2,18 @@
 const S = {
   maps:          new Map(),  // mapId → { mapId, mapName, events }
   commonEvents:  [],
-  mapInfos:      {},         // mapId → {name}
+  mapInfos:      {},         // mapId → {name, parentId, order, expanded}
   selectedMapId: null,
   selectedEvId:  null,
   selectedPage:  0,
   detailOpen:    true,
+  actors:        [],         // index → actor name
+  variables:     [],         // index → variable name
+  switches:      [],         // index → switch name
+  mapJsons:      new Map(),  // mapId → original map JSON object
+  currentNodes:  [],         // nodes from current page render
+  currentPage:   null,       // current page object {list}
+  dirty:         false,
 };
 
 /* ── DOM refs ────────────────────────────────────────── */
@@ -17,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
     'scan-status','setup-status','event-breadcrumb','page-tabs',
     'event-picker','event-list-grid','detail-panel','detail-body',
     'open-btn','about-btn','about-modal','about-close','theme-toggle',
-    'detail-toggle','sidebar-toggle','cy-fit','cy-zoom-in','cy-zoom-out',
+    'detail-toggle','sidebar-toggle','cy-fit','cy-zoom-in','cy-zoom-out','btn-download',
   ].forEach(id => { EL[id.replace(/-([a-z])/g, (_,c)=>c.toUpperCase())] = document.getElementById(id); });
   EL.graphView   = document.getElementById('graph-view');
   EL.sbResizer   = document.getElementById('sb-resizer');
@@ -74,10 +81,16 @@ function cyStyle() {
     nodeTypeStyle('condition', NODE_COLORS.condition, 'diamond'),
     nodeTypeStyle('label',     NODE_COLORS.label,     'ellipse'),
     nodeTypeStyle('jump',      NODE_COLORS.jump,      'ellipse'),
-    {
-      selector: 'node:selected',
-      style: { 'border-width': 2.5, 'border-color': '#f59e0b', 'box-shadow': '0 0 0 3px rgba(245,158,11,.3)' }
-    },
+    ...Object.entries(NODE_COLORS).map(([type, colors]) => ({
+      selector: `node[nodeType="${type}"]:selected`,
+      style: {
+        'border-width': 3,
+        'border-color': colors.border,
+        'underlay-color': colors.border,
+        'underlay-opacity': 0.4,
+        'underlay-padding': 9,
+      },
+    })),
     {
       selector: 'edge',
       style: {
@@ -126,15 +139,25 @@ function nodeTypeStyle(type, colors, shape) {
 /* ── Render graph ────────────────────────────────────── */
 function renderGraph(nodes, edges) {
   if (!cy) initCy();
+  S.currentNodes = nodes;
 
   const elements = [];
   for (const n of nodes) {
-    elements.push({ data: { id: n.id, label: nodeLabel(n), nodeType: n.type, nodeData: n } });
+    elements.push({ data: {
+      id: n.id,
+      label: nodeLabel(n),
+      nodeType: n.type,
+      nodeData: n,
+      glowColor: NODE_COLORS[n.type]?.border || '#f59e0b',
+    }});
   }
   for (const e of edges) {
     const eid = `e_${e.source}_${e.target}_${Math.random().toString(36).slice(2,6)}`;
     elements.push({ data: { id: eid, source: e.source, target: e.target, label: e.label || '', isJump: e.isJump || false } });
   }
+
+  const emptyNotice = document.getElementById('empty-page-notice');
+  if (emptyNotice) emptyNotice.style.display = 'none';
 
   cy.elements().remove();
   cy.add(elements);
@@ -158,10 +181,14 @@ function nodeLabel(n) {
   switch (n.type) {
     case 'dialogue': {
       const spk = n.speaker ? n.speaker + '\n' : '';
-      const txt = n.lines.map(l => stripCodes(l)).join('\n').slice(0, 100);
+      const full = n.lines.map(l => formatText(l)).join('\n');
+      const txt = full.length > 120 ? full.slice(0, 120) + '…' : full;
       return (spk + txt).trim() || '(empty text)';
     }
-    case 'choice':    return n.choices.map((c,i) => `${i+1}. ${c}`).join('\n');
+    case 'choice': {
+      const full = n.choices.map((c, i) => `${i+1}. ${formatText(c)}`).join('\n');
+      return full.length > 120 ? full.slice(0, 120) + '…' : full;
+    }
     case 'condition': return n.label;
     case 'label':     return `▸ ${n.name}`;
     case 'jump':      return `↩ ${n.target}`;
@@ -169,19 +196,28 @@ function nodeLabel(n) {
   }
 }
 
-// Strip RPG Maker text control codes like \C[n], \V[n], \N[n], \I[n], \\.
-function stripCodes(str) {
-  return (str || '').replace(/\\[A-Za-z]\[\d+\]/g, '').replace(/\\\./g, '').replace(/\\!/g, '').trim();
+// Strip control codes then resolve actor/variable names.
+function formatText(str) {
+  const resolved = resolveTextCodes(str || '');
+  return resolved.replace(/\\[A-Za-z]\[\d+\]/g, '').replace(/\\\./g, '').replace(/\\!/g, '').trim();
 }
 
+// Alias kept for any legacy callers.
+function stripCodes(str) { return formatText(str); }
+
 /* ── Detail panel ────────────────────────────────────── */
-function showDetail(nodeData) {
+function showDetail(nodeData, editMode) {
   if (!nodeData) return;
   const body = EL.detailBody;
   body.innerHTML = '';
 
   const badge = el('span', `detail-type-badge badge-${nodeData.type}`, typeName(nodeData.type));
   body.appendChild(badge);
+
+  if (nodeData.type === 'dialogue' && editMode) {
+    renderDetailEdit(body, nodeData);
+    return;
+  }
 
   switch (nodeData.type) {
     case 'dialogue': {
@@ -191,9 +227,15 @@ function showDetail(nodeData) {
       }
       const linesWrap = el('div', 'detail-lines');
       for (const line of nodeData.lines) {
-        linesWrap.appendChild(el('div', 'detail-line', line || '(empty)'));
+        const resolved = resolveTextCodes(line);
+        linesWrap.appendChild(el('div', 'detail-line', resolved || '(empty)'));
       }
       body.appendChild(linesWrap);
+
+      const editBtn = el('button', 'btn-ghost', 'Edit');
+      editBtn.style.marginTop = '8px';
+      editBtn.addEventListener('click', () => showDetail(nodeData, true));
+      body.appendChild(editBtn);
       break;
     }
     case 'choice': {
@@ -202,7 +244,7 @@ function showDetail(nodeData) {
       nodeData.choices.forEach((c, i) => {
         const row = el('div', 'detail-choice-item');
         row.appendChild(el('span', 'detail-choice-num', `${i+1}`));
-        row.appendChild(el('span', '', c));
+        row.appendChild(el('span', '', resolveTextCodes(c)));
         cw.appendChild(row);
       });
       body.appendChild(cw);
@@ -224,6 +266,62 @@ function showDetail(nodeData) {
       break;
     }
   }
+}
+
+function renderDetailEdit(body, nodeData) {
+  const spkWrap = el('div', 'detail-edit-field');
+  spkWrap.appendChild(el('div', 'detail-edit-label', 'Speaker'));
+  const spkInput = el('input', 'detail-edit-input');
+  spkInput.type = 'text';
+  spkInput.value = nodeData.speaker || '';
+  spkWrap.appendChild(spkInput);
+  body.appendChild(spkWrap);
+
+  const txtWrap = el('div', 'detail-edit-field');
+  txtWrap.appendChild(el('div', 'detail-edit-label', 'Text (one line per row)'));
+  const txtArea = document.createElement('textarea');
+  txtArea.className = 'detail-edit-input';
+  txtArea.rows = 6;
+  txtArea.value = nodeData.lines.join('\n');
+  txtWrap.appendChild(txtArea);
+  body.appendChild(txtWrap);
+
+  const actions = el('div', 'detail-edit-actions');
+
+  const saveBtn = el('button', 'btn-save', 'Save');
+  saveBtn.addEventListener('click', () => {
+    const newSpeaker = spkInput.value.trim();
+    const newLines = txtArea.value.split('\n');
+
+    nodeData.speaker = newSpeaker;
+    nodeData.lines = newLines;
+
+    // Patch the original command list so download reflects edits
+    if (S.currentPage && nodeData.listStart !== undefined) {
+      const list = S.currentPage.list;
+      list[nodeData.listStart].parameters[4] = newSpeaker;
+      let li = 1;
+      for (let i = nodeData.listStart + 1; i < nodeData.listEnd && i < list.length; i++) {
+        if (list[i].code === 401) {
+          list[i].parameters[0] = newLines[li - 1] ?? '';
+          li++;
+        }
+      }
+      // Add/remove trailing 401 lines if line count changed
+    }
+
+    // Update cytoscape label live
+    cy?.getElementById(nodeData.id)?.data('label', nodeLabel(nodeData));
+    S.dirty = true;
+    showDownloadBtn();
+    showDetail(nodeData, false);
+  });
+  actions.appendChild(saveBtn);
+
+  const cancelBtn = el('button', 'btn-cancel-edit', 'Cancel');
+  cancelBtn.addEventListener('click', () => showDetail(nodeData, false));
+  actions.appendChild(cancelBtn);
+  body.appendChild(actions);
 }
 
 function clearDetail() {
@@ -250,37 +348,113 @@ function fieldEl(label, value) {
 
 /* ── Sidebar rendering ───────────────────────────────── */
 function renderSidebar() {
-  const list = EL.sbList;
-  list.innerHTML = '';
+  const listEl = EL.sbList;
+  listEl.innerHTML = '';
 
   if (S.maps.size === 0 && S.commonEvents.length === 0) {
-    list.appendChild(el('div', 'sb-item', 'No data loaded'));
+    listEl.appendChild(el('div', 'sb-item', 'No data loaded'));
     return;
   }
 
   if (S.maps.size > 0) {
-    list.appendChild(el('div', 'sb-section', 'Maps'));
-    for (const [mapId, mapData] of S.maps) {
-      const item = el('div', 'sb-item' + (S.selectedMapId === mapId ? ' active' : ''));
-      const icon = el('span', '', '🗺');
-      icon.style.fontSize = '12px';
-      item.appendChild(icon);
-      item.appendChild(el('span', '', mapData.mapName));
-      const cnt = el('span', 'sb-count', mapData.events.length);
-      item.appendChild(cnt);
-      item.addEventListener('click', () => selectMap(mapId));
-      list.appendChild(item);
-    }
+    listEl.appendChild(el('div', 'sb-section', 'Maps'));
+    renderMapTree(listEl);
   }
 
   if (S.commonEvents.length > 0) {
-    list.appendChild(el('div', 'sb-section', 'Common Events'));
+    listEl.appendChild(el('div', 'sb-section', 'Common Events'));
     for (const cev of S.commonEvents) {
       const item = el('div', 'sb-item' + (S.selectedMapId === 'common' && S.selectedEvId === cev.id ? ' active' : ''));
       item.appendChild(el('span', '', '⚡'));
       item.appendChild(el('span', '', cev.name));
       item.addEventListener('click', () => selectCommonEvent(cev.id));
-      list.appendChild(item);
+      listEl.appendChild(item);
+    }
+  }
+}
+
+function renderMapTree(container) {
+  // Build children map from mapInfos
+  const children = {};
+  for (const [id, info] of Object.entries(S.mapInfos)) {
+    const pid = info.parentId ?? 0;
+    (children[pid] = children[pid] || []).push(parseInt(id));
+  }
+  for (const pid in children) {
+    children[pid].sort((a, b) => (S.mapInfos[a]?.order ?? 0) - (S.mapInfos[b]?.order ?? 0));
+  }
+
+  function hasEvents(id) {
+    if (S.maps.has(id)) return true;
+    return (children[id] || []).some(c => hasEvents(c));
+  }
+
+  function renderNode(id, depth, parentEl) {
+    if (!hasEvents(id)) return;
+    const info = S.mapInfos[id];
+    if (!info) return;
+
+    const hasMap = S.maps.has(id);
+    const kidsWithEvents = (children[id] || []).filter(c => hasEvents(c));
+
+    if (kidsWithEvents.length > 0) {
+      // Folder row
+      const folderRow = el('div', 'sb-folder');
+      folderRow.style.paddingLeft = (depth * 12 + 12) + 'px';
+      // Start expanded if info.expanded is true (mirrors RPG Maker editor state)
+      if (info.expanded === false) folderRow.classList.add('collapsed');
+      const arrow = el('span', 'sb-folder-arrow', '▾');
+      const label = el('span', 'sb-folder-label', info.name);
+      folderRow.appendChild(arrow);
+      folderRow.appendChild(label);
+      if (hasMap) {
+        const cnt = el('span', 'sb-count', S.maps.get(id).events.length);
+        cnt.style.marginLeft = 'auto';
+        folderRow.appendChild(cnt);
+        folderRow.addEventListener('click', e => {
+          if (e.target === arrow || e.target === folderRow) {
+            folderRow.classList.toggle('collapsed');
+          } else {
+            selectMap(id);
+          }
+        });
+        if (S.selectedMapId === id) label.style.color = 'var(--a)';
+      } else {
+        folderRow.addEventListener('click', () => folderRow.classList.toggle('collapsed'));
+      }
+      parentEl.appendChild(folderRow);
+
+      const childWrap = el('div', 'sb-children');
+      for (const cid of kidsWithEvents) renderNode(cid, depth + 1, childWrap);
+      parentEl.appendChild(childWrap);
+    } else if (hasMap) {
+      // Leaf map item
+      const mapData = S.maps.get(id);
+      const item = el('div', 'sb-item' + (S.selectedMapId === id ? ' active' : ''));
+      item.style.paddingLeft = (depth * 12 + 12) + 'px';
+      item.appendChild(el('span', '', '🗺'));
+      item.appendChild(el('span', '', info.name));
+      const cnt = el('span', 'sb-count', mapData.events.length);
+      item.appendChild(cnt);
+      item.addEventListener('click', () => selectMap(id));
+      parentEl.appendChild(item);
+    }
+  }
+
+  // Render root-level nodes (parentId=0)
+  (children[0] || []).filter(c => hasEvents(c))
+    .forEach(id => renderNode(id, 0, container));
+
+  // Fallback: maps not in mapInfos tree
+  for (const [mapId] of S.maps) {
+    if (!S.mapInfos[mapId]) {
+      const mapData = S.maps.get(mapId);
+      const item = el('div', 'sb-item' + (S.selectedMapId === mapId ? ' active' : ''));
+      item.appendChild(el('span', '', '🗺'));
+      item.appendChild(el('span', '', mapData.mapName));
+      item.appendChild(el('span', 'sb-count', mapData.events.length));
+      item.addEventListener('click', () => selectMap(mapId));
+      container.appendChild(item);
     }
   }
 }
@@ -290,6 +464,8 @@ function selectMap(mapId) {
   S.selectedMapId = mapId;
   S.selectedEvId  = null;
   S.selectedPage  = 0;
+  S.currentPage   = null;
+  if (EL.btnDownload) EL.btnDownload.classList.remove('visible');
   renderSidebar();
   showGraphView();
   showEventPicker(mapId);
@@ -308,10 +484,12 @@ function selectCommonEvent(evId) {
   EL.eventBreadcrumb.innerHTML = `Common Events › <span>${cev.name}</span>`;
   EL.pageTabs.innerHTML = '';
   EL.eventPicker.classList.add('hidden');
+  S.currentPage = cev;
+  showDownloadBtn();
 
   const prefix = `cev_${evId}`;
   const { nodes, edges } = parseEventPage(cev.list, prefix);
-  renderGraph(nodes, edges);
+  if (nodes.length === 0) { renderEmptyPageNotice(); } else { renderGraph(nodes, edges); }
   clearDetail();
 }
 
@@ -327,10 +505,11 @@ function showEventPicker(mapId) {
   grid.innerHTML = '';
 
   for (const ev of mapData.events) {
-    const card = el('div', 'ev-card');
+    const empty = !ev.pages.some(page => page.list.some(cmd => VISIBLE_CODES.has(cmd.code)));
+    const card = el('div', empty ? 'ev-card ev-empty' : 'ev-card');
     card.appendChild(el('div', 'ev-card-name', ev.name));
     card.appendChild(el('div', 'ev-card-meta', `ID: ${ev.id} · (${ev.x},${ev.y}) · ${ev.pages.length} page${ev.pages.length !== 1 ? 's' : ''}`));
-    card.addEventListener('click', () => selectEvent(mapId, ev.id));
+    if (!empty) card.addEventListener('click', () => selectEvent(mapId, ev.id));
     grid.appendChild(card);
   }
 }
@@ -346,6 +525,7 @@ function selectEvent(mapId, evId) {
 
   EL.eventBreadcrumb.innerHTML = `${mapData.mapName} › <span>${ev.name}</span>`;
   EL.eventPicker.classList.add('hidden');
+  showDownloadBtn();
   renderSidebar();
 
   // Render page tabs
@@ -368,10 +548,37 @@ function selectPage(pi) {
   const ev = mapData?.events.find(e => e.id === S.selectedEvId);
   if (!ev || !ev.pages[pi]) return;
 
+  S.currentPage = ev.pages[pi];
   const prefix = `map${S.selectedMapId}_ev${S.selectedEvId}_p${pi}`;
   const { nodes, edges } = parseEventPage(ev.pages[pi].list, prefix);
-  renderGraph(nodes, edges);
+
+  if (nodes.length === 0) {
+    renderEmptyPageNotice();
+  } else {
+    renderGraph(nodes, edges);
+  }
   clearDetail();
+}
+
+function renderEmptyPageNotice() {
+  if (!cy) initCy();
+  cy.elements().remove();
+  // Show notice overlay in the cy container
+  let notice = document.getElementById('empty-page-notice');
+  if (!notice) {
+    notice = el('div', 'empty-event-notice');
+    notice.id = 'empty-page-notice';
+    notice.style.cssText = 'position:absolute;inset:0;z-index:4;background:var(--bg);pointer-events:none';
+    document.getElementById('cy').parentElement.appendChild(notice);
+  }
+  notice.innerHTML = '';
+  notice.appendChild(el('div', 'empty-event-notice-icon', '🔲'));
+  notice.appendChild(el('div', 'empty-event-notice-title', 'No displayable commands'));
+  notice.appendChild(el('div', 'empty-event-notice-sub', 'This page has no dialogue, choices, conditions, labels or jumps to visualize.'));
+  notice.style.display = 'flex';
+  notice.style.flexDirection = 'column';
+  notice.style.alignItems = 'center';
+  notice.style.justifyContent = 'center';
 }
 
 /* ── View switching ──────────────────────────────────── */
@@ -412,12 +619,33 @@ async function loadFolder(files) {
     }
   }
 
-  // Load MapInfos.json for map names
+  // Load MapInfos.json for map names + tree structure
   const infoFile = findFile(fileMap, dataPrefix, 'MapInfos.json');
   if (infoFile) {
     try {
       const json = JSON.parse(await infoFile.text());
-      json.forEach((info, i) => { if (info) S.mapInfos[i] = { name: info.name }; });
+      json.forEach((info, i) => {
+        if (info) S.mapInfos[i] = { name: info.name, parentId: info.parentId ?? 0, order: info.order ?? i, expanded: info.expanded !== false };
+      });
+    } catch {}
+  }
+
+  // Load Actors.json for \N[n] resolution
+  const actorsFile = findFile(fileMap, dataPrefix, 'Actors.json');
+  if (actorsFile) {
+    try {
+      const json = JSON.parse(await actorsFile.text());
+      S.actors = json.map(a => (a && a.name) || '');
+    } catch {}
+  }
+
+  // Load System.json for variable/switch names
+  const systemFile = findFile(fileMap, dataPrefix, 'System.json');
+  if (systemFile) {
+    try {
+      const json = JSON.parse(await systemFile.text());
+      S.variables = json.variables || [];
+      S.switches  = json.switches  || [];
     } catch {}
   }
 
@@ -448,6 +676,7 @@ async function loadFolder(files) {
       const data = parseMapJson(json, mapId, S.mapInfos);
       if (data.events.length > 0) {
         S.maps.set(mapId, data);
+        S.mapJsons.set(mapId, json);
         loaded++;
       }
     } catch {}
@@ -489,6 +718,35 @@ function setStatus(cls, html) {
   if (!el) return;
   el.className = cls;
   el.innerHTML = html;
+}
+
+/* ── Download ────────────────────────────────────────── */
+function showDownloadBtn() {
+  if (EL.btnDownload) EL.btnDownload.classList.add('visible');
+}
+
+function downloadCurrentMap() {
+  if (S.selectedMapId === 'common') {
+    // Rebuild CommonEvents from S.commonEvents
+    const arr = [null];
+    for (const cev of S.commonEvents) arr[cev.id] = { id: cev.id, name: cev.name, list: cev.list };
+    const blob = new Blob([JSON.stringify(arr)], { type: 'application/json' });
+    triggerDownload(blob, 'CommonEvents.json');
+    return;
+  }
+  const json = S.mapJsons.get(S.selectedMapId);
+  if (!json) return;
+  const blob = new Blob([JSON.stringify(json)], { type: 'application/json' });
+  triggerDownload(blob, `Map${String(S.selectedMapId).padStart(3,'0')}.json`);
+}
+
+function triggerDownload(blob, filename) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
 }
 
 /* ── UI events ───────────────────────────────────────── */
@@ -589,6 +847,9 @@ function init() {
     if (sbDrag) EL.sbResizer.classList.remove('dragging');
     sbDrag = false;
   });
+
+  // Download
+  EL.btnDownload.addEventListener('click', downloadCurrentMap);
 
   // Keyboard
   document.addEventListener('keydown', e => {
