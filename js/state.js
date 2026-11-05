@@ -10,10 +10,8 @@ const S = {
   actors:           [],         // index → actor name
   variables:        [],         // index → variable name
   switches:         [],         // index → switch name
-  mapJsons:         new Map(),  // mapId → original map JSON object
   currentNodes:     [],
-  currentPage:      null,       // current page object {list}
-  dirty:            false,
+  currentPage:      null,       // current page object {list} (read-only)
   collapsedFolders: new Set(),  // mapIds the user has manually collapsed
   history:          [],         // undo stack: {type, ...}
   future:           [],         // redo stack

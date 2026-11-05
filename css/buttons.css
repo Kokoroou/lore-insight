@@ -3,7 +3,7 @@
   display: flex; align-items: center; gap: 6px;
   padding: 6px 14px;
   background: var(--a);
-  color: #09080a;
+  color: var(--a-on);
   font-weight: 700;
   font-size: 12px;
   letter-spacing: .02em;

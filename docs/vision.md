@@ -1,5 +1,12 @@
 # Product Vision
 
+> **Name and positioning (2026-11-05).** The product is **MakerLens Events**, the event-flow half of the MakerLens family
+> (MakerLens Assets views images and audio). Positioning: for people who need to understand how an RPG Maker MV/MZ game
+> works — ending conditions, dialogue branches, which switch is turned on where — without the original project,
+> MakerLens Events is an event-flow viewer that runs in the browser and opens a whole game with one drag and drop.
+> Unlike the RPG Maker editor and in-editor plugins such as Visual Event Editor, it needs no plugin or project, reads
+> released games, and files never leave the machine. It is read-only: editing and repackaging games is out of scope.
+
 ## 1. Core Objective
 
 Build a **static web application** that runs 100% client-side in the user's browser — no server, no uploads, no dependencies to install.
@@ -8,17 +15,17 @@ The core feature: let users drag and drop an RPG Maker game's `data/` folder int
 
 ## 2. Market Positioning & Pain Points
 
-**The gap:** This is a blue-ocean opportunity. The existing ecosystem has translation tools and external screenplay editors, but no dedicated static web tool for reviewing live event flow directly from game files.
+**The gap:** The existing ecosystem has translation tools, in-editor node editors (Visual Event Editor, Visual Dialogue Branches) and runtime debuggers, but no static web tool that reads the event flow of a released game directly from its files.
 
-**Developers and writers** need a bird's-eye view to:
-- Untangle nested spaghetti events
-- Detect dead-end branches
-- Review complex branching narratives in story-heavy projects
-
-**Guide creators and dataminers** need a tool to:
+**Guide creators, wiki editors and dataminers** (primary audience) need to:
 - Map conditions for unlocking hidden routes
 - Track True Ending requirements
 - Plan optimal speedrun paths
+
+**Developers, writers and translators** (secondary) need a bird's-eye view to:
+- Untangle nested spaghetti events
+- Detect dead-end branches
+- Review complex branching narratives in story-heavy projects
 
 ## 3. Technical Architecture
 

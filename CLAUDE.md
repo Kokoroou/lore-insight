@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project overview
 
-LoreInsight is a **100% static, client-side** web tool that parses RPG Maker MV/MZ game data files and renders event command flow as an interactive node graph. No build step, no package manager, no server. Open `index.html` in a browser and it runs.
+MakerLens Events (formerly LoreInsight) is a **100% static, client-side**, **read-only** web tool that parses RPG Maker MV/MZ game data files and renders event command flow as an interactive node graph. No build step, no package manager, no server. Open `index.html` in a browser and it runs.
 
 ## Running locally
 
@@ -30,7 +30,7 @@ Folder drop / file picker
       → parse Actors.json    → S.actors[]  (\N[n] resolution)
       → parse System.json    → S.variables[], S.switches[]
       → parse CommonEvents.json → S.commonEvents[]
-      → parse Map###.json    → S.maps (Map), S.mapJsons (originals)
+      → parse Map###.json    → S.maps (Map)
   → renderSidebar() — tree built from mapInfos.parentId/order/expanded
   → selectMap() → showEventPicker()
   → selectEvent() → selectPage()
@@ -42,7 +42,7 @@ Folder drop / file picker
 
 `parseEventPage(list, prefix)` is the core function. It walks the flat RPG Maker command array recursively using the `indent` field to determine nesting depth. Returns `{ nodes, edges }`.
 
-- **Dialogue** (code 101 + trailing 401s): collects lines into one node, stores `listStart`/`listEnd` indices for in-place editing
+- **Dialogue** (code 101 + trailing 401s): collects lines into one node, stores `listStart`/`listEnd` indices into the command list
 - **Choices** (102 → 402 branches → 404 end): one choice node, branches recurse one indent deeper
 - **Conditions** (111 → 411 else → 412 end): condition node, true/else branches recurse
 - **Labels** (118) / **Jumps** (119): collected into `labelMap` / `jumpQueue`, resolved as dashed back-edges after the main parse
@@ -55,14 +55,13 @@ Folder drop / file picker
 
 Key fields:
 - `S.maps` — `Map<mapId, {mapId, mapName, events[]}>` (parsed)
-- `S.mapJsons` — `Map<mapId, json>` — original JSON objects; `page.list` arrays inside are shared references so in-place edits flow through to downloads
 - `S.mapInfos` — `{[id]: {name, parentId, order, expanded}}` — drives sidebar tree
-- `S.currentPage` — the currently rendered `{list}` page object, used by the edit/save flow
+- `S.currentPage` — the currently rendered `{list}` page object (never mutated)
 - `S.actors / .variables / .switches` — loaded from game data for name resolution
 
-### Editing & download
+### Read-only by design
 
-When a user edits a dialogue node in the detail panel, `renderDetailEdit()` patches `S.currentPage.list` directly at `nodeData.listStart` / `listEnd`. Because `S.mapJsons` shares the same array references, `downloadCurrentMap()` can simply `JSON.stringify(S.mapJsons.get(mapId))` to export the modified file.
+The tool never edits or exports game files. In-place dialogue editing and the map download were removed when the project joined the MakerLens brand, whose rules forbid editing or repackaging games (see MakerLens `docs/ROADMAP.md`, "Do not do"). Undo/redo (`history.js`) only covers node moves in the graph.
 
 ### Sidebar tree
 
@@ -77,7 +76,9 @@ When a user edits a dialogue node in the detail panel, `renderDetailEdit()` patc
 
 ## Conventions
 
-- **No framework, no build.** All JS is plain ES5-compatible (no `import`/`export`). Scripts are loaded in order: `constants.js` → `parser.js` → `app.js`. `parser.js` accesses the global `S` object from `app.js` directly.
+- **Brand: MakerLens Events.** Same family as MakerLens Assets (https://kokoroou.github.io/rpgmaker-assets-viewer/): the magnifier mark, the green `--a` action colour and the "Maker**Lens** + suffix" wordmark. Do not reintroduce the LoreInsight name in the UI.
+- **No third-party hosts.** Libraries live in `vendor/` (see `vendor/README.md`); the CSP in `index.html` allows `'self'` only, so no inline scripts or `onclick=` attributes (put code in `js/`).
+- **No framework, no build.** All JS is plain ES5-compatible (no `import`/`export`). Scripts are loaded in order: `theme-init.js` (head) → vendor libs → `constants.js` → `parser.js` → … → `app.js`. `parser.js` accesses the global `S` object from `app.js` directly.
 - **`S`** is the single global state object. EL is the DOM ref cache populated at `DOMContentLoaded`.
 - CSS uses design tokens as custom properties (`--bg`, `--s1..s3`, `--bd/bd2`, `--a`, `--t/t2/t3`). Both dark (default) and light themes are defined in `:root` and `html[data-theme="light"]`.
 - RPG Maker MV and MZ differ in where the speaker name lives: MZ puts it in `cmd.parameters[4]`; MV doesn't have it inline. The parser handles this with `|| ''`.

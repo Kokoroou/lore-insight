@@ -53,13 +53,3 @@
 .ev-card-name { font-size: 12px; font-weight: 600; color: var(--t); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ev-card-meta { font-size: 10px; color: var(--t3); margin-top: 2px; }
 
-/* Toolbar download button */
-#btn-download {
-  display: none; align-items: center; gap: 5px;
-  padding: 3px 10px; font-size: 11px; font-weight: 600;
-  background: var(--s2); border: 1px solid var(--bd); color: var(--t2);
-  border-radius: var(--r); transition: all .12s; white-space: nowrap; margin-left: auto;
-}
-#btn-download.visible { display: flex; }
-#btn-download:hover { border-color: var(--a40); color: var(--a); background: var(--a10); }
-#btn-download svg { flex-shrink: 0; }

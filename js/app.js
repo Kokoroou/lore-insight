@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     'scan-status','setup-status','event-breadcrumb','page-tabs',
     'event-picker','event-list-grid','detail-panel','detail-body',
     'open-btn','about-btn','about-modal','about-close','theme-toggle',
-    'detail-toggle','sidebar-toggle','cy-fit','cy-zoom-in','cy-zoom-out','btn-download',
+    'detail-toggle','sidebar-toggle','cy-fit','cy-zoom-in','cy-zoom-out',
   ].forEach(id => { EL[id.replace(/-([a-z])/g, (_,c)=>c.toUpperCase())] = document.getElementById(id); });
   EL.graphView = document.getElementById('graph-view');
   EL.sbResizer = document.getElementById('sb-resizer');
@@ -32,7 +32,6 @@ function selectMap(mapId) {
   S.selectedEvId  = null;
   S.selectedPage  = 0;
   S.currentPage   = null;
-  if (EL.btnDownload) EL.btnDownload.classList.remove('visible');
   renderSidebar();
   showGraphView();
   showEventPicker(mapId);
@@ -52,7 +51,6 @@ function selectCommonEvent(evId) {
   EL.pageTabs.innerHTML = '';
   EL.eventPicker.classList.add('hidden');
   S.currentPage = cev;
-  showDownloadBtn();
 
   const { nodes, edges } = parseEventPage(cev.list, `cev_${evId}`);
   if (nodes.length === 0) { renderEmptyPageNotice(); } else { renderGraph(nodes, edges); }
@@ -91,7 +89,6 @@ function selectEvent(mapId, evId) {
 
   buildBreadcrumb(mapId, ev.name);
   EL.eventPicker.classList.add('hidden');
-  showDownloadBtn();
   renderSidebar();
 
   EL.pageTabs.innerHTML = '';
@@ -143,17 +140,17 @@ function renderEmptyPageNotice() {
 
 /* ── UI init ─────────────────────────────────────────── */
 function init() {
-  const saved = localStorage.getItem('li-theme');
+  const saved = localStorage.getItem('mle-theme');
   if (saved === 'light') document.documentElement.setAttribute('data-theme', 'light');
 
   EL.themeToggle.addEventListener('click', () => {
     const isLight = document.documentElement.getAttribute('data-theme') === 'light';
     if (isLight) {
       document.documentElement.removeAttribute('data-theme');
-      localStorage.removeItem('li-theme');
+      localStorage.removeItem('mle-theme');
     } else {
       document.documentElement.setAttribute('data-theme', 'light');
-      localStorage.setItem('li-theme', 'light');
+      localStorage.setItem('mle-theme', 'light');
     }
     if (cy) cy.style(cyStyle());
   });
@@ -221,8 +218,6 @@ function init() {
     if (sbDrag) EL.sbResizer.classList.remove('dragging');
     sbDrag = false;
   });
-
-  EL.btnDownload.addEventListener('click', downloadCurrentMap);
 
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') EL.aboutModal.classList.remove('open');
