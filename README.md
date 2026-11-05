@@ -73,6 +73,7 @@ lore-insight/            # repository name kept; product name is MakerLens Event
   vendor/                # Cytoscape, dagre, cytoscape-dagre (MIT)
   docs/
     vision.md            # Product vision and positioning
+    ROADMAP.md           # Repositioning as MakerLens Events: phases, gates, stop rule
 ```
 
 ## Technical Notes
