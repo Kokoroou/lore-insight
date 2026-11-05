@@ -1,10 +1,14 @@
-# LoreInsight
+# MakerLens Events
 
-A browser-based tool to visualize RPG Maker MV and MZ event flow as an interactive node graph.
+An RPG Maker event viewer: see the event flow of any RPG Maker MV or MZ game as an interactive node graph, right in your browser.
 
-Drag your game's `data/` folder into the browser. LoreInsight parses the event commands and renders each event page as a directed graph — dialogue nodes, choice branches, conditional branches, labels, and jumps — all laid out automatically.
+Drag the game's folder (or its `data/` folder) into the page. MakerLens Events parses the event commands and renders each event page as a directed graph — dialogue, choice branches, conditional branches with switch and variable names, labels and jumps — laid out automatically. It works on released games: no project, no editor, no plugin.
 
-**100% offline.** No server. No uploads. Everything runs in your browser.
+**Private and read-only.** No server, no uploads, no third-party hosts, and your game files are never modified.
+
+Part of the **MakerLens** family: use [MakerLens Assets](https://kokoroou.github.io/rpgmaker-assets-viewer/) to browse the same game's images and audio.
+
+> Formerly named LoreInsight. Renamed so the event viewer and the asset viewer share one brand and one audience.
 
 ## Features
 
@@ -18,6 +22,7 @@ Drag your game's `data/` folder into the browser. LoreInsight parses the event c
 - Sidebar navigation: maps and common events
 - Resizable sidebar, zoom controls, fit-to-screen
 - Dark and light theme (preference saved locally)
+- Read-only: nothing is ever written back to the game files
 
 ## Usage
 
@@ -51,16 +56,24 @@ Drag your game's `data/` folder into the browser. LoreInsight parses the event c
 ## Project Structure
 
 ```
-lore-insight/
-  index.html          # App shell
-  css/
-    style.css         # All styles (dark/light theme)
+lore-insight/            # repository name kept; product name is MakerLens Events
+  index.html             # App shell (CSP: self only)
+  css/                   # Styles split by area; tokens.css holds the MakerLens colours
   js/
-    constants.js      # RPG Maker command codes and node color definitions
-    parser.js         # Event command parser → graph nodes and edges
-    app.js            # UI state, Cytoscape render, file loading
+    theme-init.js        # Applies the saved theme before first paint
+    constants.js         # RPG Maker command codes and node colours
+    parser.js            # Event command parser → graph nodes and edges
+    state.js             # Global state S
+    graph.js             # Cytoscape setup, style and render
+    detail.js            # Node inspector panel
+    sidebar.js           # Map tree and common events
+    history.js           # Undo/redo for node moves
+    loader.js            # Folder picking and game data parsing
+    app.js               # DOM refs, selection, UI wiring
+  vendor/                # Cytoscape, dagre, cytoscape-dagre (MIT)
   docs/
-    vision.md         # Product vision and technical architecture notes
+    vision.md            # Product vision and positioning
+    ROADMAP.md           # Repositioning as MakerLens Events: phases, gates, stop rule
 ```
 
 ## Technical Notes
@@ -69,7 +82,7 @@ lore-insight/
 
 **File loading:** Uses the [File System Access API](https://developer.mozilla.org/en-US/docs/Web/API/File_System_API) (`showDirectoryPicker`) when available, with a `<input webkitdirectory>` fallback for broader compatibility. Drag-and-drop is also supported via the DataTransfer API.
 
-**Graph rendering:** [Cytoscape.js](https://cytoscape.org/) with [cytoscape-dagre](https://github.com/cytoscape/cytoscape.js-dagre) for automatic top-down layout. Both libraries are loaded from `unpkg.com` CDN — an internet connection is required on first load; after that the browser caches them.
+**Graph rendering:** [Cytoscape.js](https://cytoscape.org/) with [cytoscape-dagre](https://github.com/cytoscape/cytoscape.js-dagre) for automatic top-down layout. The libraries are vendored in `vendor/` (MIT, see `vendor/README.md`), so the app works fully offline and the Content-Security-Policy allows only the site itself.
 
 ## Browser Compatibility
 

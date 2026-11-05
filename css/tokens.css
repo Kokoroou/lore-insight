@@ -6,10 +6,12 @@
   --s3:        #171828;
   --bd:        #1c1e30;
   --bd2:       #272944;
-  --a:         #f59e0b;
-  --a10:       rgba(245,158,11,.10);
-  --a20:       rgba(245,158,11,.20);
-  --a40:       rgba(245,158,11,.40);
+  /* action colour: shared with MakerLens (green), so both tools read as one brand */
+  --a:         #4ade80;
+  --a-on:      #052e16;  /* text on a filled --a button */
+  --a10:       rgba(74,222,128,.10);
+  --a20:       rgba(74,222,128,.20);
+  --a40:       rgba(74,222,128,.40);
   --t:         #eeeef6;
   --t2:        #686a88;
   --t3:        #30324e;
@@ -35,10 +37,11 @@ html[data-theme="light"] {
   --s3:        #dcdee8;
   --bd:        #c8cad8;
   --bd2:       #b0b2c4;
-  --a:         #d97706;
-  --a10:       rgba(217,119,6,.10);
-  --a20:       rgba(217,119,6,.20);
-  --a40:       rgba(217,119,6,.40);
+  --a:         #15803d;
+  --a-on:      #ffffff;
+  --a10:       rgba(21,128,61,.08);
+  --a20:       rgba(21,128,61,.16);
+  --a40:       rgba(21,128,61,.40);
   --t:         #1e1f2e;
   --t2:        #5a5c78;
   --t3:        #9698b0;

@@ -1,31 +1,3 @@
-/* ── Download ────────────────────────────────────────── */
-function showDownloadBtn() {
-  if (EL.btnDownload) EL.btnDownload.classList.add('visible');
-}
-
-function downloadCurrentMap() {
-  if (S.selectedMapId === 'common') {
-    const arr = [null];
-    for (const cev of S.commonEvents) arr[cev.id] = { id: cev.id, name: cev.name, list: cev.list };
-    const blob = new Blob([JSON.stringify(arr)], { type: 'application/json' });
-    triggerDownload(blob, 'CommonEvents.json');
-    return;
-  }
-  const json = S.mapJsons.get(S.selectedMapId);
-  if (!json) return;
-  const blob = new Blob([JSON.stringify(json)], { type: 'application/json' });
-  triggerDownload(blob, `Map${String(S.selectedMapId).padStart(3,'0')}.json`);
-}
-
-function triggerDownload(blob, filename) {
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
-}
-
 /* ── File loading ────────────────────────────────────── */
 async function loadFolder(files) {
   setStatus('info', '<span class="spinner"></span> Scanning files…');
@@ -109,7 +81,6 @@ async function loadFolder(files) {
       const data = parseMapJson(json, mapId, S.mapInfos);
       if (data.events.length > 0) {
         S.maps.set(mapId, data);
-        S.mapJsons.set(mapId, json);
         loaded++;
       }
     } catch {}
@@ -152,7 +123,7 @@ function setStatus(cls, html) {
 
 async function openWithFSAPI() {
   try {
-    const dir = await window.showDirectoryPicker({ id: 'lore-game', mode: 'read' });
+    const dir = await window.showDirectoryPicker({ id: 'makerlens-game', mode: 'read' });
     const files = await collectFilesFromFSAPI(dir, '');
     await loadFolder(files);
   } catch (e) {

@@ -29,3 +29,12 @@
 #logo span { color: var(--a); }
 #header-right { display: flex; align-items: center; gap: 8px; margin-left: auto; }
 #scan-status { font-size: 11px; color: var(--t2); white-space: nowrap; }
+
+/* Brand: "MakerLens" + product suffix, same mark as MakerLens Assets */
+.logo-mark { color: var(--a); flex-shrink: 0; }
+.logo-sub {
+  font-style: normal; font-weight: 600; color: var(--t2);
+  margin-left: 5px; letter-spacing: .01em;
+}
+#logo .logo-full, .about-logo .logo-full { color: var(--t); }
+#logo .logo-full span, .about-logo .logo-full span { color: var(--a); }

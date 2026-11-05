@@ -3,28 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LoreInsight — RPG Maker Story Flow Visualizer</title>
-<meta name="description" content="Visualize RPG Maker MV/MZ event flow as an interactive node graph. 100% offline — drag your game data folder to get started.">
+<!-- Content-Security-Policy: scripts, styles and everything else load only from this site
+     (libraries are vendored in vendor/). The page makes no network requests with game data. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>RPG Maker Event Viewer — MV &amp; MZ event flow graph | MakerLens Events</title>
+<meta name="description" content="Free online RPG Maker event viewer. See the dialogue, choices, conditions and switches of any MV or MZ game as a flow graph, right in your browser. No project, no install, files never uploaded.">
+<meta name="keywords" content="RPG Maker event viewer, RPG Maker MV event flow, RPG Maker MZ events, common events viewer, RPG Maker switches, RPG Maker dialogue tree">
+<meta property="og:title" content="RPG Maker Event Viewer — MakerLens Events">
+<meta property="og:description" content="See the event flow of any RPG Maker MV or MZ game as a node graph. Runs in your browser — your files are never uploaded.">
 <link rel="stylesheet" href="css/style.css">
-<script>
-(function(){
-  var t = localStorage.getItem('li-theme');
-  if (t === 'light') document.documentElement.setAttribute('data-theme','light');
-}());
-</script>
+<script src="js/theme-init.js"></script>
 </head>
 <body>
 
 <!-- ╔════ HEADER ════╗ -->
 <div id="header">
   <div id="logo">
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-      <rect x="1"  y="1"  width="7" height="7" rx="1.5" fill="var(--a)" opacity=".9"/>
-      <rect x="10" y="1"  width="7" height="7" rx="1.5" fill="var(--a)" opacity=".5"/>
-      <rect x="1"  y="10" width="7" height="7" rx="1.5" fill="var(--a)" opacity=".5"/>
-      <rect x="10" y="10" width="7" height="7" rx="1.5" fill="var(--a)" opacity=".2"/>
-    </svg>
-    Lore<span>Insight</span>
+    <svg class="logo-mark" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/><path d="M7.5 12.5l2-2.5 1.5 1.8 1-1.3 1.5 2" stroke-width="1.6"/></svg>
+    <span class="logo-full">Maker<span>Lens</span><em class="logo-sub">Events</em></span>
   </div>
 
   <div id="header-right">
@@ -75,17 +71,17 @@
     <!-- Setup screen -->
     <div id="setup">
       <div id="setup-inner">
-        <div class="setup-title">Lore<span>Insight</span></div>
+        <h1 class="setup-title">Maker<span>Lens</span><em class="logo-sub">Events</em></h1>
         <div class="setup-sub">
-          Visualize RPG Maker MV &amp; MZ event flow as an interactive node graph.
-          Drag your game's root folder or <code>data/</code> folder to get started.
+          See how an RPG Maker MV or MZ game works: the dialogue, choices, conditions and jumps of every event as a flow graph.
+          Works on released games, no project or editor needed. Drag the game's root folder or its <code>data/</code> folder to start.
         </div>
 
         <div id="drop-zone">
           <div class="dz-icon">🗂</div>
           <div class="dz-title">Drop game folder here</div>
           <div class="dz-sub">Supports RPG Maker MV · MZ</div>
-          <button class="btn-primary" id="open-game-btn" style="font-size:13px;padding:8px 24px" onclick="event.stopPropagation();document.getElementById('open-btn').click()">
+          <button class="btn-primary" id="open-game-btn" style="font-size:13px;padding:8px 24px">
             Select Folder
           </button>
         </div>
@@ -93,7 +89,11 @@
         <div id="setup-status"></div>
 
         <div class="privacy-note">
-          🔒 <strong>100% offline &amp; private</strong> — all processing happens in your browser, nothing is uploaded.
+          🔒 <strong>Private</strong> — everything runs in your browser, nothing is uploaded. Read-only: your game files are never changed.
+        </div>
+        <div class="sibling-link">
+          Looking for the game's images and music? Open the same folder in
+          <a href="https://kokoroou.github.io/rpgmaker-assets-viewer/" rel="noopener">MakerLens Assets</a>.
         </div>
       </div>
     </div>
@@ -111,12 +111,6 @@
 
         <span id="event-breadcrumb"></span>
         <div id="page-tabs"></div>
-        <button id="btn-download" title="Download modified map JSON">
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <path d="M6 1v7M3.5 5.5L6 8l2.5-2.5M2 9.5h8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          Download
-        </button>
       </div>
 
       <!-- Graph + detail -->
@@ -183,15 +177,10 @@
     <button id="about-close" title="Close">✕</button>
 
     <div class="about-logo">
-      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-        <rect x="1"  y="1"  width="7" height="7" rx="1.5" fill="var(--a)" opacity=".9"/>
-        <rect x="10" y="1"  width="7" height="7" rx="1.5" fill="var(--a)" opacity=".5"/>
-        <rect x="1"  y="10" width="7" height="7" rx="1.5" fill="var(--a)" opacity=".5"/>
-        <rect x="10" y="10" width="7" height="7" rx="1.5" fill="var(--a)" opacity=".2"/>
-      </svg>
-      Lore<span>Insight</span>
+      <svg class="logo-mark" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/><path d="M7.5 12.5l2-2.5 1.5 1.8 1-1.3 1.5 2" stroke-width="1.6"/></svg>
+      <span class="logo-full">Maker<span>Lens</span><em class="logo-sub">Events</em></span>
     </div>
-    <div class="about-sub">RPG Maker story flow visualizer — 100% client-side</div>
+    <div class="about-sub">RPG Maker event flow viewer — part of <a href="https://kokoroou.github.io/rpgmaker-assets-viewer/" rel="noopener">MakerLens</a></div>
 
     <div class="about-section">
       <div class="about-section-title">How to Use</div>
@@ -215,8 +204,9 @@
     </div>
 
     <div class="about-note">
-      🔒 <strong>100% Private &amp; Offline:</strong> All processing happens entirely in your browser.
-      No files are uploaded, transmitted, or stored on any server.
+      🔒 <strong>Private and read-only:</strong> all processing happens in your browser.
+      No files are uploaded, transmitted, or stored on any server, and the game files are never modified.
+      Intended for your own games or games you have permission to study.
     </div>
   </div>
 </div>
@@ -234,9 +224,9 @@
 <input type="file" id="folder-input" webkitdirectory multiple accept="">
 
 <!-- Libraries -->
-<script src="https://unpkg.com/cytoscape@3.29.2/dist/cytoscape.min.js"></script>
-<script src="https://unpkg.com/dagre@0.8.5/dist/dagre.min.js"></script>
-<script src="https://unpkg.com/cytoscape-dagre@2.5.0/cytoscape-dagre.js"></script>
+<script src="vendor/cytoscape/cytoscape.min.js"></script>
+<script src="vendor/dagre/dagre.min.js"></script>
+<script src="vendor/cytoscape-dagre/cytoscape-dagre.js"></script>
 
 <!-- App -->
 <script src="js/constants.js"></script>
