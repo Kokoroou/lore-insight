@@ -19,6 +19,10 @@ For testing, drag the game's `data/` folder onto the page or use the Open Folder
 
 There are no automated tests and no linter. All verification is manual in-browser.
 
+## Publishing
+
+Public URL: `https://makerlens.kokoroou.workers.dev/events/` — one Cloudflare Worker serves the whole MakerLens family; the `Kokoroou/makerlens` repo builds it and runs `scripts/assemble-site.sh` from this repo into `/events/`. A new top-level file the site serves must be added to that script. All paths in the page must stay relative so the tool works under a subpath.
+
 ## Architecture
 
 ### Data flow
@@ -76,7 +80,7 @@ The tool never edits or exports game files. In-place dialogue editing and the ma
 
 ## Conventions
 
-- **Brand: MakerLens Events.** Same family as MakerLens Assets (https://kokoroou.github.io/rpgmaker-assets-viewer/): the magnifier mark, the green `--a` action colour and the "Maker**Lens** + suffix" wordmark. Do not reintroduce the LoreInsight name in the UI.
+- **Brand: MakerLens Events.** Same family as MakerLens Assets (https://makerlens.kokoroou.workers.dev/assets/): the magnifier mark, the green `--a` action colour and the "Maker**Lens** + suffix" wordmark. Do not reintroduce the LoreInsight name in the UI.
 - **No third-party hosts.** Libraries live in `vendor/` (see `vendor/README.md`); the CSP in `index.html` allows `'self'` only, so no inline scripts or `onclick=` attributes (put code in `js/`).
 - **No framework, no build.** All JS is plain ES5-compatible (no `import`/`export`). Scripts are loaded in order: `theme-init.js` (head) → vendor libs → `constants.js` → `parser.js` → … → `app.js`. `parser.js` accesses the global `S` object from `app.js` directly.
 - **`S`** is the single global state object. EL is the DOM ref cache populated at `DOMContentLoaded`.

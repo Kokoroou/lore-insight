@@ -6,7 +6,7 @@ Drag the game's folder (or its `data/` folder) into the page. MakerLens Events p
 
 **Private and read-only.** No server, no uploads, no third-party hosts, and your game files are never modified.
 
-Part of the **MakerLens** family: use [MakerLens Assets](https://kokoroou.github.io/rpgmaker-assets-viewer/) to browse the same game's images and audio.
+Part of the **MakerLens** family: use [MakerLens Assets](https://makerlens.kokoroou.workers.dev/assets/) to browse the same game's images and audio.
 
 > Formerly named LoreInsight. Renamed so the event viewer and the asset viewer share one brand and one audience.
 
