@@ -29,14 +29,28 @@ function showGraphView() {
 }
 
 /* ── Map / event selection ───────────────────────────── */
-function selectMap(mapId) {
+async function selectMap(mapId) {
   S.selectedMapId = mapId;
   S.selectedEvId  = null;
   S.selectedPage  = 0;
   S.currentPage   = null;
   renderSidebar();
   showGraphView();
+  if (!S.maps.has(mapId) && S.mapFiles.has(mapId)) {
+    // Not read yet: read it now, ahead of the background (loader.js).
+    showPickerMessage(mapId, 'Reading map…');
+    await openMap(mapId);
+    if (S.selectedMapId !== mapId || S.selectedEvId !== null) return;   // the user moved on
+  }
   showEventPicker(mapId);
+}
+
+function showPickerMessage(mapId, text) {
+  buildBreadcrumb(mapId);
+  EL.pageTabs.innerHTML = '';
+  EL.eventPicker.classList.remove('hidden');
+  EL.eventListGrid.innerHTML = '';
+  EL.eventListGrid.appendChild(el('div', 'detail-empty', text));
 }
 
 function selectCommonEvent(evId) {
@@ -62,7 +76,7 @@ function selectCommonEvent(evId) {
 
 function showEventPicker(mapId) {
   const mapData = S.maps.get(mapId);
-  if (!mapData) return;
+  if (!mapData) { showPickerMessage(mapId, 'This map has no events.'); return; }
 
   buildBreadcrumb(mapId);
   EL.pageTabs.innerHTML = '';
@@ -184,7 +198,7 @@ function init() {
     const items = [...e.dataTransfer.items];
     const entry = items.find(i => i.webkitGetAsEntry?.()?.isDirectory);
     if (entry) {
-      readDirectoryEntry(entry.webkitGetAsEntry()).then(files => loadFolder(files));
+      openFolder(entry.webkitGetAsEntry(), FS_ENTRY);
     } else if (e.dataTransfer.files.length) {
       loadFolder([...e.dataTransfer.files]);
     }
