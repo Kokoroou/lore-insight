@@ -1,0 +1,141 @@
+/* ── Feedback card (js/feedback.js) ──────────────────────
+   Same card as MakerLens Assets css/feedback.css (keep them in step).
+   Small non-modal card: bottom-right on desktop, bottom sheet on phones.
+   One view at a time (#feedback[data-view]). Below the About dialog (z 100). */
+#feedback {
+  position: fixed;
+  right: 20px; bottom: 20px;
+  z-index: 90;
+  width: 340px;
+  max-width: calc(100vw - 32px);
+  background: var(--s1);
+  border: 1px solid var(--bd);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 14px 16px 16px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity .2s var(--ease), transform .2s var(--ease);
+}
+#feedback[hidden] { display: none; }
+#feedback.open { opacity: 1; transform: none; }
+#feedback[data-view="report"] { width: 380px; }
+
+.fb-view { display: none; }
+#feedback[data-view="rate"]   .fb-rate,
+#feedback[data-view="follow"] .fb-follow,
+#feedback[data-view="report"] .fb-report,
+#feedback[data-view="thanks"] .fb-thanks { display: block; }
+#feedback[data-view="thanks"] .fb-thanks { display: flex; }
+
+.fb-close {
+  position: absolute; top: 6px; right: 6px;
+  width: 32px; height: 32px; border-radius: var(--r);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--t3);
+  transition: background .15s var(--ease), color .15s var(--ease);
+}
+.fb-close:hover { background: var(--s2); color: var(--t); }
+
+.fb-title { margin: 0 32px 10px 0; font-size: 15px; font-weight: 600; line-height: 1.35; }
+.fb-done { color: var(--a); }
+#fb-follow-q { color: var(--t2); font-weight: 500; }
+#feedback fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+
+/* stars: the whole row is the control; tapping one sends it */
+.fb-stars { display: flex; justify-content: space-between; margin: 0 -4px; }
+.fb-stars input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+.fb-stars label {
+  flex: 1; display: flex; justify-content: center; align-items: center;
+  height: 48px; border-radius: var(--r);
+  color: var(--bd2); fill: transparent; cursor: pointer;
+  transition: color .12s var(--ease), fill .12s var(--ease), transform .12s var(--ease);
+}
+.fb-stars input:focus-visible + label { outline: 2px solid var(--a); outline-offset: -2px; }
+.fb-stars label:active { transform: scale(.9); }
+@media (hover: hover) {
+  .fb-stars label:hover,
+  .fb-stars label:has(~ label:hover) { color: var(--star); fill: var(--star); }
+  .fb-stars label:hover { transform: scale(1.12); }
+}
+
+/* text fields */
+#feedback textarea {
+  width: 100%; box-sizing: border-box; resize: none;
+  padding: 9px 11px;
+  background: var(--s2); color: var(--t);
+  border: 1px solid var(--bd2); border-radius: var(--r);
+  font: 16px/1.4 var(--font);   /* ≥16px: no iOS zoom on focus */
+  transition: border-color .15s var(--ease), box-shadow .15s var(--ease);
+}
+#feedback textarea:focus { outline: none; border-color: var(--a); box-shadow: 0 0 0 3px var(--a20); }
+#feedback textarea::placeholder { color: var(--t3); }
+#fb-note { max-height: 120px; overflow-y: auto; }
+
+.fb-row { display: flex; align-items: flex-end; gap: 8px; }
+.fb-send {
+  flex-shrink: 0; width: 40px; height: 40px; border-radius: var(--r);
+  display: flex; align-items: center; justify-content: center;
+  background: var(--a-bg); color: var(--a-on);
+  transition: filter .15s var(--ease), opacity .15s var(--ease);
+}
+.fb-send:hover { filter: brightness(1.08); }
+.fb-send:disabled { opacity: .35; cursor: default; filter: none; }
+
+/* report */
+.fb-kind { display: flex; gap: 6px; margin-bottom: 10px; }
+.fb-kind input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+.fb-kind label {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 34px; padding: 0 12px;
+  border: 1px solid var(--bd2); border-radius: 999px;
+  font-size: 13px; font-weight: 500; color: var(--t2); cursor: pointer;
+  transition: border-color .15s var(--ease), background .15s var(--ease), color .15s var(--ease);
+}
+.fb-kind label:hover { border-color: var(--a40); }
+.fb-kind input:checked + label { border-color: var(--a); background: var(--a10); color: var(--t); }
+.fb-kind input:focus-visible + label { outline: 2px solid var(--a); outline-offset: 2px; }
+.fb-foot { justify-content: space-between; align-items: center; margin-top: 10px; }
+.fb-env {
+  display: inline-flex; align-items: center; gap: 6px; min-width: 0;
+  height: 28px; padding: 0 8px 0 10px; border-radius: 999px;
+  background: var(--s2); color: var(--t2);
+  font: 12px var(--mono); white-space: nowrap; overflow: hidden;
+  transition: background .15s var(--ease), color .15s var(--ease), opacity .15s var(--ease);
+}
+.fb-env span { overflow: hidden; text-overflow: ellipsis; }
+.fb-env svg { flex-shrink: 0; color: var(--t3); }
+.fb-env:hover { background: var(--s3); color: var(--t); }
+.fb-env[aria-pressed="false"] { opacity: .5; text-decoration: line-through; }
+.fb-env[aria-pressed="false"] svg { display: none; }
+#feedback[data-kind="idea"] .fb-env { visibility: hidden; }
+.fb-fine { margin: 10px 0 0; font-size: 12px; color: var(--t3); }
+.fb-fine a { color: var(--t2); text-underline-offset: 2px; }
+.fb-fine a:hover { color: var(--a); }
+
+.fb-thanks { align-items: center; gap: 8px; padding: 4px 32px 2px 0; font-weight: 600; }
+.fb-thanks svg { color: var(--a); flex-shrink: 0; }
+
+/* honeypot: off-screen, never visible to people */
+.fb-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+
+#fb-error { font-size: 13px; color: var(--err); margin-top: 8px; }
+#fb-error:empty { display: none; }
+#fb-error a { color: inherit; }
+
+.fb-busy { opacity: .6; pointer-events: none; }
+
+/* About: entry point */
+.about-feedback { display: flex; }
+
+@media (max-width: 600px) {
+  #feedback, #feedback[data-view="report"] {
+    left: 12px; right: 12px; width: auto; max-width: none;
+    bottom: calc(12px + env(safe-area-inset-bottom));
+  }
+  .fb-kind label { height: 40px; }
+  .fb-send { width: 44px; height: 44px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #feedback, .fb-stars label { transition: none; }
+}

@@ -3,7 +3,8 @@
 // CI runs it as the lint step (.github/workflows/ci.yml). It guards the rules in
 // CLAUDE.md that a browser would only reveal at runtime:
 //   1. every js/*.js parses (`node --check`);
-//   2. index.html has a CSP that allows 'self' only, plus the GoatCounter pixel in img-src;
+//   2. index.html has a CSP that allows 'self' only, plus the GoatCounter pixel in img-src and
+//      the feedback inbox (js/feedback.js) in connect-src;
 //   3. no inline <script> and no on*="" handler attributes (the CSP would block them);
 //   4. every js/*.js is loaded by index.html, and every local src/href (and CSS @import) exists.
 //      Links that leave this tool (`../assets/...`, the MakerLens family on the same origin)
@@ -16,6 +17,7 @@ import { fileURLToPath } from 'node:url';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const PAGE = 'index.html';
 const COUNTER = 'https://kokoroou.goatcounter.com';
+const FEEDBACK = 'https://feedback.kokoroou.workers.dev';   // inbox in the private repo Kokoroou/feedbacks
 
 const errors = [];
 const fail = (file, msg) => errors.push(`${file}: ${msg}`);
@@ -46,7 +48,8 @@ if (!csp) {
     for (const v of vals) {
       if (!/^https?:/.test(v) && !/\*/.test(v)) continue;
       if (name === 'img-src' && v === COUNTER) continue;
-      fail(PAGE, `CSP ${name} allows the external source ${v} (only ${COUNTER} in img-src is allowed)`);
+      if (name === 'connect-src' && v === FEEDBACK) continue;
+      fail(PAGE, `CSP ${name} allows the external source ${v} (only ${COUNTER} in img-src and ${FEEDBACK} in connect-src are allowed)`);
     }
   }
 }

@@ -67,7 +67,7 @@ Goal: the product is public, findable and measurable, and both MakerLens sites p
 | 1.2 | ~~**Decide the repository name**~~ | Done: renamed to `rpgmaker-events-viewer` (matches `rpgmaker-assets-viewer`) | S |
 | 1.3 | ~~**Cross-link from MakerLens Assets**~~ | Done: MakerLens Assets roadmap item 17, a link in its About dialog; Events links back from the setup screen and About. Link only, no data shared between sites | S |
 | 1.4 | ~~**Anonymous page counter (GoatCounter)**~~ | Done: `js/analytics.js`, page views and referrer only, CSP `img-src` allows the counter; documented in the shared MakerLens privacy page (`/assets/privacy.html#analytics`) | S |
-| 1.5 | **Feedback and star rating** | New `makerlens-events` project in the feedback inbox (Kokoroou/feedbacks `src/projects.js`); prompt only after the second game is opened, like MakerLens | S–M |
+| 1.5 | ~~**Feedback and star rating**~~ | Done: `js/feedback.js`, project `makerlens-events` in the feedback inbox (managed through its `/api/projects`), prompt only after the second game is loaded, like MakerLens Assets; documented in `/assets/privacy.html#feedback` | S–M |
 | 1.6 | **SEO basics** | `canonical`, `og:url`, `og:image` (MakerLens style), `sitemap.xml`, `llms.txt`, favicon with the shared mark | S |
 | 1.7 | **`LEGAL.md` and FAQ** | Intended use (own games or games you may study), read-only, no upload, takedown policy; mirror MakerLens wording | S |
 | 1.8 | **Synthetic demo game** | A tiny self-made `data/` folder with a "True Ending" condition chain, for screenshots, the FAQ and launch posts. Never use real game data | S–M |

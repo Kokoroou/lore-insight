@@ -34,6 +34,7 @@
 .btn-ghost svg { color: var(--t2); }
 .btn-ghost:hover { border-color: var(--a40); background: var(--a10); }
 .btn-ghost:hover svg { color: var(--a); }
+.btn-sm { height: 34px; padding: 0 14px; font-size: 13px; }
 
 .btn-icon {
   display: inline-flex; align-items: center; justify-content: center;
