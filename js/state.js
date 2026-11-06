@@ -1,6 +1,8 @@
 /* ── Global state ─────────────────────────────────────── */
 const S = {
-  maps:             new Map(),  // mapId → { mapId, mapName, events }
+  maps:             new Map(),  // mapId → { mapId, mapName, events } (read, with events)
+  mapFiles:         new Map(),  // mapId → Map###.json not read yet (loader.js)
+  bgDone:           null,       // Promise: background map reading finished
   commonEvents:     [],
   mapInfos:         {},         // mapId → {name, parentId, order, expanded}
   selectedMapId:    null,

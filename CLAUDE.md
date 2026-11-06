@@ -37,15 +37,22 @@ Public URL: `https://makerlens.kokoroou.workers.dev/events/` — one Cloudflare 
 ### Data flow
 
 ```
-Folder drop / file picker
-  → loadFolder() [app.js]
+Folder picker / drop
+  → findDataFiles() [loader.js] — breadth-first to the first folder with Map###.json
+      (data/ first, www/data/ for MV), skipping img/ audio/ movies/…; returns lazy
+      file-likes for data/*.json only (FS_HANDLE / FS_ENTRY adapters; FS_ENTRY loops
+      readEntries(), which returns at most ~100 entries per call)
+  → loadFolder() [loader.js] (<input webkitdirectory> calls it with its File list)
       → parse MapInfos.json  → S.mapInfos  (tree metadata)
       → parse Actors.json    → S.actors[]  (\N[n] resolution)
       → parse System.json    → S.variables[], S.switches[]
       → parse CommonEvents.json → S.commonEvents[]
-      → parse Map###.json    → S.maps (Map)
-  → renderSidebar() — tree built from mapInfos.parentId/order/expanded
-  → selectMap() → showEventPicker()
+      → Map###.json NOT read yet → S.mapFiles (Map id → file)
+      → renderSidebar() at once (unread maps show a "…" count)
+      → readMapsInBackground() → S.bgDone: reads maps in sidebar order into S.maps
+        (only maps with events; the rest leave the tree), pausing while Fg.active;
+        opens the first map with events unless the user already picked one
+  → selectMap() → openMap() (foreground read, ahead of the background) → showEventPicker()
   → selectEvent() → selectPage()
       → parseEventPage(page.list, prefix) [parser.js]
       → renderGraph(nodes, edges) [app.js]

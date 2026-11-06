@@ -1,14 +1,29 @@
 /* ── Sidebar rendering ───────────────────────────────── */
 function renderSidebar() {
   const listEl = EL.sbList;
+  const top = listEl.scrollTop;   // re-rendered while maps load: keep the scroll position
   listEl.innerHTML = '';
+  renderSidebarItems(listEl);
+  listEl.scrollTop = top;
+}
 
-  if (S.maps.size === 0 && S.commonEvents.length === 0) {
+// Event count of a map, or a placeholder while its Map###.json is not read yet.
+function mapCountEl(id) {
+  const data = S.maps.get(id);
+  if (data) return el('span', 'sb-count', data.events.length);
+  const c = el('span', 'sb-count pending', '…');
+  c.title = 'Reading…';
+  return c;
+}
+
+function renderSidebarItems(listEl) {
+  const hasMaps = S.maps.size > 0 || S.mapFiles.size > 0;
+  if (!hasMaps && S.commonEvents.length === 0) {
     listEl.appendChild(el('div', 'detail-empty', 'No data loaded'));
     return;
   }
 
-  if (S.maps.size > 0) {
+  if (hasMaps) {
     listEl.appendChild(el('div', 'sb-section', 'Maps'));
     renderMapTree(listEl);
   }
@@ -35,8 +50,10 @@ function renderMapTree(container) {
     children[pid].sort((a, b) => (S.mapInfos[a]?.order ?? 0) - (S.mapInfos[b]?.order ?? 0));
   }
 
+  // A map not read yet counts: it leaves the tree once read if it has no events.
+  const isMap = id => S.maps.has(id) || S.mapFiles.has(id);
   function hasEvents(id) {
-    if (S.maps.has(id)) return true;
+    if (isMap(id)) return true;
     return (children[id] || []).some(c => hasEvents(c));
   }
 
@@ -45,7 +62,7 @@ function renderMapTree(container) {
     const info = S.mapInfos[id];
     if (!info) return;
 
-    const hasMap = S.maps.has(id);
+    const hasMap = isMap(id);
     const kidsWithEvents = (children[id] || []).filter(c => hasEvents(c));
 
     if (kidsWithEvents.length > 0) {
@@ -64,7 +81,8 @@ function renderMapTree(container) {
       };
 
       if (hasMap) {
-        folderRow.appendChild(el('span', 'sb-count', S.maps.get(id).events.length));
+        folderRow.dataset.mapId = id;
+        folderRow.appendChild(mapCountEl(id));
         folderRow.addEventListener('click', e => {
           if (arrow.contains(e.target) || e.target === folderRow) toggleCollapse();
           else selectMap(id);
@@ -79,12 +97,12 @@ function renderMapTree(container) {
       for (const cid of kidsWithEvents) renderNode(cid, depth + 1, childWrap);
       parentEl.appendChild(childWrap);
     } else if (hasMap) {
-      const mapData = S.maps.get(id);
       const item = el('div', 'sb-item' + (S.selectedMapId === id ? ' active' : ''));
+      item.dataset.mapId = id;
       item.style.paddingLeft = (depth * 12 + 8) + 'px';
       item.appendChild(iconEl('map'));
       item.appendChild(el('span', 'sb-name', info.name));
-      item.appendChild(el('span', 'sb-count', mapData.events.length));
+      item.appendChild(mapCountEl(id));
       item.addEventListener('click', () => selectMap(id));
       parentEl.appendChild(item);
     }
@@ -94,13 +112,14 @@ function renderMapTree(container) {
     .forEach(id => renderNode(id, 0, container));
 
   // Fallback: maps not referenced in mapInfos tree
-  for (const [mapId] of S.maps) {
+  const loose = [...new Set([...S.maps.keys(), ...S.mapFiles.keys()])].sort((a, b) => a - b);
+  for (const mapId of loose) {
     if (!S.mapInfos[mapId]) {
-      const mapData = S.maps.get(mapId);
       const item = el('div', 'sb-item' + (S.selectedMapId === mapId ? ' active' : ''));
+      item.dataset.mapId = mapId;
       item.appendChild(iconEl('map'));
-      item.appendChild(el('span', 'sb-name', mapData.mapName));
-      item.appendChild(el('span', 'sb-count', mapData.events.length));
+      item.appendChild(el('span', 'sb-name', S.maps.get(mapId)?.mapName || `Map${String(mapId).padStart(3, '0')}`));
+      item.appendChild(mapCountEl(mapId));
       item.addEventListener('click', () => selectMap(mapId));
       container.appendChild(item);
     }
