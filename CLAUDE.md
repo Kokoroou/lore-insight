@@ -21,7 +21,7 @@ There are no automated tests and no linter. All verification is manual in-browse
 
 ## Publishing
 
-Public URL: `https://makerlens.kokoroou.workers.dev/events/` — one Cloudflare Worker serves the whole MakerLens family; the `Kokoroou/makerlens` repo builds it and runs `scripts/assemble-site.sh` from this repo into `/events/`. A new top-level file the site serves must be added to that script. All paths in the page must stay relative so the tool works under a subpath.
+Public URL: `https://makerlens.kokoroou.workers.dev/events/` — one Cloudflare Worker serves the whole MakerLens family; the `Kokoroou/makerlens` repo builds it and runs `scripts/assemble-site.sh` from this repo into `/events/`. A new top-level file the site serves must be added to that script. `.github/workflows/notify-makerlens.yml` asks `Kokoroou/makerlens` to redeploy after each push to `main` (secret `MAKERLENS_DISPATCH_TOKEN`). The repo was renamed from `lore-insight` to `rpgmaker-events-viewer`. All paths in the page must stay relative so the tool works under a subpath.
 
 ## Architecture
 
