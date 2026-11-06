@@ -80,7 +80,8 @@ function parseEventPage(list, prefix) {
 
         case CMD.SHOW_CHOICES: {
           const id = nid();
-          const choices = (cmd.parameters && cmd.parameters[0] || []).filter(c => c !== '');
+          const allChoices = (cmd.parameters && cmd.parameters[0]) || [];
+          const choices = allChoices.filter(c => c !== '');
           add({ id, type: 'choice', choices });
           i++;
 
@@ -89,7 +90,8 @@ function parseEventPage(list, prefix) {
             if (c.code === CMD.CHOICE_END && c.indent === indent) { i++; break; }
             if (c.code === CMD.WHEN_CHOICE && c.indent === indent) {
               const ci    = c.parameters[0];
-              const clabel = choices[ci] ?? `Choice ${ci}`;
+              // Index into the unfiltered list: a blank choice before this one must not shift it.
+              const clabel = allChoices[ci] || c.parameters[1] || `Choice ${ci + 1}`;
               i++;
               const sub = parseBlock(i, indent + 1);
               i = sub.nextIdx;
