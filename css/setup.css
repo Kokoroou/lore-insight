@@ -58,6 +58,8 @@
 }
 #drag-inner .dz-icon { width: 72px; height: 72px; }
 .dz-hint { font-size: 13px; color: var(--t3); }
+/* --t3 on the --s2 code chip is 4.3:1; --t2 keeps it above 4.5:1 */
+.dz-hint code { color: var(--t2); }
 
 .engine-chips {
   display: flex; flex-wrap: wrap; justify-content: center; gap: 6px;
@@ -94,6 +96,8 @@
 }
 .or-divider::before, .or-divider::after { content: ''; flex: 1; height: 1px; background: var(--bd); }
 .setup-alt { display: flex; justify-content: center; }
+/* the label is long: let it wrap on a phone instead of running off-screen */
+.setup-alt .btn-ghost { max-width: 100%; height: auto; min-height: 40px; padding: 8px 16px; white-space: normal; text-align: center; }
 
 /* ── Privacy note ────────────────────────────────────── */
 .privacy-note {
