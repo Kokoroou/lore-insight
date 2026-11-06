@@ -6,7 +6,7 @@ Drag the game's folder (or its `data/` folder) into the page. MakerLens Events p
 
 **Private and read-only.** No server, no uploads, no third-party hosts, and your game files are never modified.
 
-**Try it:** <https://makerlens.kokoroou.workers.dev/events/>
+**Try it:** <https://makerlens.kokoroou.workers.dev/events/> · [FAQ](https://makerlens.kokoroou.workers.dev/events/faq.html)
 
 **Who it's for:** guide and wiki writers, dataminers and speedrunners looking for what unlocks an ending or a hidden route; translators who need to know which branch a line belongs to; developers and writers who want a bird's-eye view of tangled events. Free, no account, no ads. Not an editor: to change events, use the RPG Maker editor.
 
@@ -62,6 +62,7 @@ Part of the **[MakerLens](https://makerlens.kokoroou.workers.dev/)** family: use
 ```
 rpgmaker-events-viewer/  # formerly lore-insight; product name is MakerLens Events
   index.html             # App shell (CSP: self only)
+  faq.html               # Static FAQ; its FAQPage JSON-LD must match the visible Q&A (check-site.mjs)
   css/                   # Styles split by area; tokens.css = shared MakerLens design tokens (copy of Assets)
   js/
     theme-init.js        # Applies the saved theme before first paint

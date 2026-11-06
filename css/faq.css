@@ -1,0 +1,25 @@
+/* FAQ page (faq.html). Same look as MakerLens Assets' faq.html; only tokens are shared. */
+@import "tokens.css";
+
+body { margin: 0; background: var(--bg); color: var(--t); font: 16px/1.7 var(--font); -webkit-font-smoothing: antialiased; }
+main { max-width: 680px; margin: 0 auto; padding: 40px 16px 64px; }
+h1 { font-size: 2rem; letter-spacing: -.02em; line-height: 1.2; margin: 0 0 12px; }
+p { color: var(--t2); }
+strong { color: var(--t); }
+a { color: var(--a); text-underline-offset: 2px; }
+code { font-family: var(--mono); background: var(--s2); border: 1px solid var(--bd); border-radius: 4px; padding: 1px 5px; font-size: .85em; color: var(--t); overflow-wrap: anywhere; }
+.back { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 14px; margin-bottom: 28px; border: 1px solid var(--bd2); border-radius: var(--r); background: var(--s1); color: var(--t); text-decoration: none; font-size: 14px; font-weight: 500; transition: background .15s, border-color .15s; }
+.back:hover { border-color: var(--a40); background: var(--a10); }
+.group { font-size: .8rem; letter-spacing: .06em; text-transform: uppercase; color: var(--t3); font-weight: 600; margin: 36px 0 0; }
+.faq { margin-top: 8px; border-top: 1px solid var(--bd); }
+details { border-bottom: 1px solid var(--bd); }
+summary { list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 16px 0; }
+summary::-webkit-details-marker { display: none; }
+summary h3 { font-size: 1.05rem; line-height: 1.4; margin: 0; font-weight: 600; }
+summary::after { content: "+"; flex: none; font-size: 1.4rem; line-height: 1; color: var(--t3); transition: transform .15s; }
+details[open] summary::after { transform: rotate(45deg); }
+details > :not(summary) { margin: 0 0 16px; }
+.cta { display: inline-flex; align-items: center; min-height: 44px; padding: 0 20px; margin-top: 32px; border-radius: var(--r); background: var(--a-bg); color: var(--a-on); text-decoration: none; font-weight: 600; }
+.cta:hover { filter: brightness(1.08); }
+.more { font-size: 14px; margin-top: 20px; }
+:focus-visible { outline: 2px solid var(--a); outline-offset: 2px; }

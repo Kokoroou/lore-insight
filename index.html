@@ -15,9 +15,48 @@
 <meta name="description" content="Free online RPG Maker event viewer. See the dialogue, choices, conditions and switches of any MV or MZ game as a flow graph, right in your browser. No project, no install, files never uploaded.">
 <meta name="keywords" content="RPG Maker event viewer, RPG Maker MV event flow, RPG Maker MZ events, common events viewer, RPG Maker switches, RPG Maker dialogue tree">
 <link rel="canonical" href="https://makerlens.kokoroou.workers.dev/events/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="MakerLens">
 <meta property="og:url" content="https://makerlens.kokoroou.workers.dev/events/">
 <meta property="og:title" content="RPG Maker Event Viewer — MakerLens Events">
 <meta property="og:description" content="See the event flow of any RPG Maker MV or MZ game as a node graph. Runs in your browser — your files are never uploaded.">
+<meta property="og:image" content="https://makerlens.kokoroou.workers.dev/events/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="MakerLens Events — RPG Maker events as a flow graph, in your browser">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="RPG Maker Event Viewer — MakerLens Events">
+<meta name="twitter:description" content="See the event flow of any RPG Maker MV or MZ game as a node graph. Free, browser-based, files never uploaded.">
+<meta name="twitter:image" content="https://makerlens.kokoroou.workers.dev/events/og-image.png">
+<meta name="twitter:image:alt" content="MakerLens Events — RPG Maker events as a flow graph, in your browser">
+<!-- Structured data. The @id values are shared with the MakerLens landing page and
+     MakerLens Assets so search engines connect the family. Not executed (no CSP impact). -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "@id": "https://makerlens.kokoroou.workers.dev/events/#app",
+  "name": "MakerLens Events",
+  "alternateName": "MakerLens RPG Maker Event Viewer",
+  "description": "Browser-based, read-only viewer for RPG Maker MV and MZ events. Shows the dialogue, choices, conditions, switches, variables, labels and jumps of map and common events as an interactive flow graph. Files are processed locally and never uploaded.",
+  "url": "https://makerlens.kokoroou.workers.dev/events/",
+  "image": "https://makerlens.kokoroou.workers.dev/events/og-image.png",
+  "isAccessibleForFree": true,
+  "applicationCategory": "DeveloperApplication",
+  "operatingSystem": "Any (web browser)",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "featureList": [
+    "Open an RPG Maker MV or MZ game folder (or its data/ folder) in the browser",
+    "Browse maps in the editor's tree and list every event with commands",
+    "Show each event page as a flow graph: dialogue, choices, conditional branches, labels and jumps",
+    "Resolve switch, variable and actor names from the game's data",
+    "Read-only: the game is never changed; 100% client-side processing"
+  ],
+  "isPartOf": { "@type": "WebSite", "@id": "https://makerlens.kokoroou.workers.dev/#website", "name": "MakerLens", "url": "https://makerlens.kokoroou.workers.dev/" },
+  "author": { "@type": "Person", "@id": "https://makerlens.kokoroou.workers.dev/#author", "name": "Trương Tuấn Anh", "url": "https://github.com/Kokoroou" },
+  "license": "https://opensource.org/licenses/MIT"
+}
+</script>
 <link rel="stylesheet" href="css/style.css">
 <script src="js/theme-init.js"></script>
 <script src="js/analytics.js" defer></script>
@@ -122,6 +161,7 @@
           <svg width="16" height="16" aria-hidden="true"><use href="#i-shield"/></svg>
           <strong>Your files never leave your device</strong>
           <span class="sep">·</span> read-only
+          <span class="sep">·</span> <a href="faq.html">FAQ</a>
           <span class="sep">·</span> <a href="../assets/privacy.html#analytics">Privacy</a>
         </div>
       </div>
@@ -216,6 +256,7 @@
         <li>Common Events are listed below the maps in the sidebar.</li>
       </ol>
       <p class="about-more">Want the game's images and music? Open <a href="https://makerlens.kokoroou.workers.dev/assets/">MakerLens Assets</a>.</p>
+      <p class="about-more">Questions? Read the <a href="faq.html">FAQ</a>: which folder to open, what the graph shows, privacy.</p>
     </div>
 
     <div class="about-section">
