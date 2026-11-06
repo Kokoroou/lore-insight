@@ -17,7 +17,16 @@ python -m http.server 8080
 
 For testing, drag the game's `data/` folder onto the page or use the Open Folder button. The `references/` directory contains a sample game for manual verification.
 
-There are no automated tests and no linter. All verification is manual in-browser.
+## Checks and CI
+
+Node (22+) runs the checks; still no dependencies:
+
+```bash
+node scripts/check-site.mjs        # JS syntax, self-only CSP, no inline scripts/handlers, local files
+node --test "tests/*.test.mjs"     # parser, loader and analytics on synthetic data
+```
+
+Run both before pushing. Tests load `js/*.js` into a `node:vm` context (`tests/helpers.mjs`: one shared global scope, like the page's `<script>` tags) and stub the DOM pieces they touch; fixtures are built in the test, never real game data. `.github/workflows/ci.yml` runs both through `kokoroou/agent-toolkit/.github/workflows/quality.yml@v0` (plus Gitleaks + Semgrep) on PRs and pushes to `main`. Graph rendering (`graph.js`, Cytoscape) is still verified by hand in the browser.
 
 ## Publishing
 
