@@ -25,7 +25,7 @@ Part of the **[MakerLens](https://makerlens.kokoroou.workers.dev/)** family: use
 - Switch between event pages with page tabs
 - Sidebar navigation: maps and common events
 - Resizable sidebar, zoom controls, fit-to-screen
-- Dark and light theme (preference saved locally)
+- Same look as MakerLens Assets; light and dark theme follow the system (a manual choice is saved locally)
 - Read-only: nothing is ever written back to the game files
 
 ## Usage
@@ -62,7 +62,7 @@ Part of the **[MakerLens](https://makerlens.kokoroou.workers.dev/)** family: use
 ```
 rpgmaker-events-viewer/  # formerly lore-insight; product name is MakerLens Events
   index.html             # App shell (CSP: self only)
-  css/                   # Styles split by area; tokens.css holds the MakerLens colours
+  css/                   # Styles split by area; tokens.css = shared MakerLens design tokens (copy of Assets)
   js/
     theme-init.js        # Applies the saved theme before first paint
     constants.js         # RPG Maker command codes and node colours

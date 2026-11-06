@@ -1,53 +1,133 @@
-/* ── Design tokens ───────────────────────────────────── */
+/* ── Design tokens ───────────────────────────────────────
+   Design system from the ui-ux-pro-max skill (developer-tool profile):
+   slate neutrals + a single green action colour, system fonts
+   (no web fonts — the CSP allows no external hosts).
+
+   Theme resolution:
+     1. html[data-theme="light" | "dark"]  → explicit user choice (theme toggle)
+     2. otherwise                           → follow prefers-color-scheme
+   Light values are the base; dark values are repeated for the media query and
+   the explicit override so both paths stay identical. */
+
 :root {
-  --bg:        #07080d;
-  --s1:        #0c0d18;
-  --s2:        #111220;
-  --s3:        #171828;
-  --bd:        #1c1e30;
-  --bd2:       #272944;
-  /* action colour: shared with MakerLens (green), so both tools read as one brand */
-  --a:         #4ade80;
-  --a-on:      #052e16;  /* text on a filled --a button */
-  --a10:       rgba(74,222,128,.10);
-  --a20:       rgba(74,222,128,.20);
-  --a40:       rgba(74,222,128,.40);
-  --t:         #eeeef6;
-  --t2:        #686a88;
-  --t3:        #30324e;
-  --ok:        #34d399;
-  --err:       #f87171;
-  --warn:      #fbbf24;
-  --r:         3px;
-  --sw:        220px;
-  --dw:        300px;
-  --dot:       rgba(255,255,255,.03);
-  --header-bg: rgba(7,8,13,.88);
-  /* node type colors */
-  --c-dlg:    #f59e0b;
-  --c-choice: #60a5fa;
-  --c-cond:   #a78bfa;
-  --c-label:  #34d399;
-  --c-jump:   #fb923c;
+  color-scheme: light;
+
+  /* surfaces */
+  --bg:   #f8fafc;   /* page */
+  --s1:   #ffffff;   /* panels, sidebar, cards */
+  --s2:   #f1f5f9;   /* inputs, quiet buttons */
+  --s3:   #e2e8f0;   /* hover */
+  --bd:   #e2e8f0;   /* hairline borders */
+  --bd2:  #cbd5e1;   /* stronger borders */
+
+  /* text */
+  --t:    #0f172a;   /* primary   — 17.8:1 on --bg */
+  --t2:   #475569;   /* secondary —  7.2:1 on --bg */
+  --t3:   #64748b;   /* tertiary  —  4.6:1 on --bg */
+
+  /* action colour */
+  --a:     #15803d;  /* text/icons on light surfaces — 5.0:1 on white */
+  --a-bg:  #15803d;  /* filled button */
+  --a-on:  #ffffff;  /* text on filled button */
+  --a10:   rgba(21,128,61,.08);
+  --a20:   rgba(21,128,61,.16);
+  --a40:   rgba(21,128,61,.40);
+
+  /* status */
+  --ok:   #15803d;
+  --err:  #b91c1c;
+  --warn: #a16207;
+  --star: #d97706;   /* rating stars */
+
+  /* checkerboard behind transparent sprites */
+  --c1:   #e2e8f0;
+  --c2:   #f8fafc;
+
+  --dot:        rgba(15,23,42,.05);
+  --header-bg:  rgba(248,250,252,.85);
+  --scrim:      rgba(15,23,42,.45);
+  --lb-bg:      rgba(15,23,42,.92);
+  --shadow-sm:  0 1px 2px rgba(15,23,42,.06), 0 1px 3px rgba(15,23,42,.08);
+  --shadow-lg:  0 12px 32px rgba(15,23,42,.16), 0 2px 6px rgba(15,23,42,.08);
+
+  /* shape & type */
+  --r:     8px;
+  --r-sm:  6px;
+  --r-lg:  12px;
+  --font:  system-ui, -apple-system, 'Segoe UI Variable Text', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --mono:  'JetBrains Mono', 'Cascadia Code', 'SF Mono', ui-monospace, Menlo, Consolas, monospace;
+  --ease:  cubic-bezier(.2,.8,.2,1);
+
+  --sw:    220px;    /* sidebar width */
+  --hh:    56px;     /* header height */
 }
-html[data-theme="light"] {
-  --bg:        #f4f5fb;
-  --s1:        #ecedf6;
-  --s2:        #e4e6f0;
-  --s3:        #dcdee8;
-  --bd:        #c8cad8;
-  --bd2:       #b0b2c4;
-  --a:         #15803d;
-  --a-on:      #ffffff;
-  --a10:       rgba(21,128,61,.08);
-  --a20:       rgba(21,128,61,.16);
-  --a40:       rgba(21,128,61,.40);
-  --t:         #1e1f2e;
-  --t2:        #5a5c78;
-  --t3:        #9698b0;
-  --ok:        #059669;
-  --err:       #dc2626;
-  --warn:      #b45309;
-  --dot:       rgba(0,0,0,.04);
-  --header-bg: rgba(244,245,251,.92);
+
+@media (max-width: 600px) {
+  :root { --sw: 140px; }
+}
+
+/* Dark — copy 1: system preference (unless the user forced light) */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg:   #0b1120;
+    --s1:   #111827;
+    --s2:   #1b2336;
+    --s3:   #272f42;
+    --bd:   #1f2a3d;
+    --bd2:  #334155;
+    --t:    #f8fafc;
+    --t2:   #94a3b8;
+    --t3:   #8391a7;
+    --a:     #4ade80;
+    --a-bg:  #22c55e;
+    --a-on:  #0f172a;
+    --a10:   rgba(34,197,94,.10);
+    --a20:   rgba(34,197,94,.20);
+    --a40:   rgba(34,197,94,.45);
+    --ok:   #4ade80;
+    --err:  #f87171;
+    --warn: #fbbf24;
+    --star: #fbbf24;
+    --c1:   #1b2336;
+    --c2:   #111827;
+    --dot:        rgba(248,250,252,.035);
+    --header-bg:  rgba(11,17,32,.82);
+    --scrim:      rgba(2,6,23,.65);
+    --lb-bg:      rgba(2,6,23,.94);
+    --shadow-sm:  0 1px 2px rgba(0,0,0,.4);
+    --shadow-lg:  0 16px 40px rgba(0,0,0,.55);
+  }
+}
+
+/* Dark — copy 2: explicit user choice */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg:   #0b1120;
+  --s1:   #111827;
+  --s2:   #1b2336;
+  --s3:   #272f42;
+  --bd:   #1f2a3d;
+  --bd2:  #334155;
+  --t:    #f8fafc;
+  --t2:   #94a3b8;
+  --t3:   #8391a7;
+  --a:     #4ade80;
+  --a-bg:  #22c55e;
+  --a-on:  #0f172a;
+  --a10:   rgba(34,197,94,.10);
+  --a20:   rgba(34,197,94,.20);
+  --a40:   rgba(34,197,94,.45);
+  --ok:   #4ade80;
+  --err:  #f87171;
+  --warn: #fbbf24;
+  --star: #fbbf24;
+  --c1:   #1b2336;
+  --c2:   #111827;
+  --dot:        rgba(248,250,252,.035);
+  --header-bg:  rgba(11,17,32,.82);
+  --scrim:      rgba(2,6,23,.65);
+  --lb-bg:      rgba(2,6,23,.94);
+  --shadow-sm:  0 1px 2px rgba(0,0,0,.4);
+  --shadow-lg:  0 16px 40px rgba(0,0,0,.55);
 }

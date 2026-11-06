@@ -22,16 +22,18 @@ const CONDITION_TYPES = {
 
 const VISIBLE_CODES = new Set([101, 102, 111, 118, 119]);
 
+// Node fills sit on the shared MakerLens slate surfaces (css/tokens.css);
+// borders match the --c-* node tokens in css/events-tokens.css.
 const NODE_COLORS = {
-  dialogue:  { bg: '#111220', border: '#f59e0b', text: '#eeeef6' },
-  choice:    { bg: '#0a1729', border: '#60a5fa', text: '#93c5fd' },
-  condition: { bg: '#180f2a', border: '#a78bfa', text: '#c4b5fd' },
-  label:     { bg: '#071a10', border: '#34d399', text: '#6ee7b7' },
-  jump:      { bg: '#1c0d04', border: '#fb923c', text: '#fdba74' },
+  dialogue:  { bg: '#1f1a12', border: '#f59e0b', text: '#f8fafc' },
+  choice:    { bg: '#0f1d33', border: '#60a5fa', text: '#bfdbfe' },
+  condition: { bg: '#1a1533', border: '#a78bfa', text: '#ddd6fe' },
+  label:     { bg: '#0b2019', border: '#34d399', text: '#a7f3d0' },
+  jump:      { bg: '#24160c', border: '#fb923c', text: '#fed7aa' },
 };
 
 const NODE_COLORS_LIGHT = {
-  dialogue:  { bg: '#fef9ee', border: '#d97706', text: '#44300a' },
+  dialogue:  { bg: '#fffbeb', border: '#d97706', text: '#0f172a' },
   choice:    { bg: '#eff6ff', border: '#2563eb', text: '#1e3a5f' },
   condition: { bg: '#f5f3ff', border: '#7c3aed', text: '#3b1d8c' },
   label:     { bg: '#ecfdf5', border: '#059669', text: '#064e3b' },

@@ -1,6 +1,6 @@
 /* ── File loading ────────────────────────────────────── */
 async function loadFolder(files) {
-  setStatus('info', '<span class="spinner"></span> Scanning files…');
+  setStatus('info', '<span class="status-spinner" aria-hidden="true"></span> Scanning files…');
   S.mapInfos = {};
   S.collapsedFolders = new Set();
   S.history = [];

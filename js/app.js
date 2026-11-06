@@ -18,11 +18,13 @@ document.addEventListener('DOMContentLoaded', () => {
 function showSetup() {
   EL.setup.style.display = 'flex';
   EL.graphView.classList.remove('visible');
+  EL.detailPanel.hidden = true;
 }
 
 function showGraphView() {
   EL.setup.style.display = 'none';
   EL.graphView.classList.add('visible');
+  EL.detailPanel.hidden = false;
   if (!cy) initCy();
 }
 
@@ -47,7 +49,8 @@ function selectCommonEvent(evId) {
   const cev = S.commonEvents.find(e => e.id === evId);
   if (!cev) return;
 
-  EL.eventBreadcrumb.innerHTML = `Common Events › <span>${cev.name}</span>`;
+  EL.eventBreadcrumb.textContent = 'Common Events › ';
+  EL.eventBreadcrumb.appendChild(el('span', '', cev.name));
   EL.pageTabs.innerHTML = '';
   EL.eventPicker.classList.add('hidden');
   S.currentPage = cev;
@@ -70,7 +73,8 @@ function showEventPicker(mapId) {
 
   for (const ev of mapData.events) {
     const empty = !ev.pages.some(page => page.list.some(cmd => VISIBLE_CODES.has(cmd.code)));
-    const card = el('div', empty ? 'ev-card ev-empty' : 'ev-card');
+    const card = el('button', empty ? 'ev-card ev-empty' : 'ev-card');
+    card.type = 'button';
     card.appendChild(el('div', 'ev-card-name', ev.name));
     card.appendChild(el('div', 'ev-card-meta', `ID: ${ev.id} · (${ev.x},${ev.y}) · ${ev.pages.length} page${ev.pages.length !== 1 ? 's' : ''}`));
     card.addEventListener('click', () => selectEvent(mapId, ev.id));
@@ -94,6 +98,8 @@ function selectEvent(mapId, evId) {
   EL.pageTabs.innerHTML = '';
   ev.pages.forEach((_, pi) => {
     const tab = el('button', 'page-tab' + (pi === 0 ? ' active' : ''), `Page ${pi + 1}`);
+    tab.setAttribute('role', 'tab');
+    tab.setAttribute('aria-selected', pi === 0 ? 'true' : 'false');
     tab.addEventListener('click', () => selectPage(pi));
     EL.pageTabs.appendChild(tab);
   });
@@ -104,7 +110,10 @@ function selectEvent(mapId, evId) {
 function selectPage(pi) {
   S.selectedPage = pi;
   const tabs = EL.pageTabs.querySelectorAll('.page-tab');
-  tabs.forEach((t, i) => t.classList.toggle('active', i === pi));
+  tabs.forEach((t, i) => {
+    t.classList.toggle('active', i === pi);
+    t.setAttribute('aria-selected', i === pi ? 'true' : 'false');
+  });
 
   const mapData = S.maps.get(S.selectedMapId);
   const ev = mapData?.events.find(e => e.id === S.selectedEvId);
@@ -121,39 +130,35 @@ function selectPage(pi) {
 function renderEmptyPageNotice() {
   if (!cy) initCy();
   cy.elements().remove();
-  let notice = document.getElementById('empty-page-notice');
-  if (!notice) {
-    notice = el('div', 'empty-event-notice');
-    notice.id = 'empty-page-notice';
-    notice.style.cssText = 'position:absolute;inset:0;z-index:4;background:var(--bg);pointer-events:none';
-    document.getElementById('cy').parentElement.appendChild(notice);
-  }
-  notice.innerHTML = '';
-  notice.appendChild(el('div', 'empty-event-notice-icon', '🔲'));
-  notice.appendChild(el('div', 'empty-event-notice-title', 'No displayable commands'));
-  notice.appendChild(el('div', 'empty-event-notice-sub', 'This page has no dialogue, choices, conditions, labels or jumps to visualize.'));
-  notice.style.display = 'flex';
-  notice.style.flexDirection = 'column';
-  notice.style.alignItems = 'center';
-  notice.style.justifyContent = 'center';
+  document.getElementById('empty-page-notice').hidden = false;
 }
 
 /* ── UI init ─────────────────────────────────────────── */
 function init() {
-  const saved = localStorage.getItem('mle-theme');
-  if (saved === 'light') document.documentElement.setAttribute('data-theme', 'light');
-
+  // Theme: same behaviour as MakerLens Assets. The default follows the OS
+  // (prefers-color-scheme); the toggle flips to the other theme, and picking the
+  // one the OS already uses clears the override again. Stored under this tool's
+  // own key (the family shares one origin, so keys stay distinct per tool).
+  const syncThemeLabel = () => {
+    const next = currentTheme() === 'dark' ? 'light' : 'dark';
+    EL.themeToggle.title = `Switch to ${next} theme`;
+    EL.themeToggle.setAttribute('aria-label', `Switch to ${next} theme`);
+  };
   EL.themeToggle.addEventListener('click', () => {
-    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-    if (isLight) {
-      document.documentElement.removeAttribute('data-theme');
-      localStorage.removeItem('mle-theme');
-    } else {
-      document.documentElement.setAttribute('data-theme', 'light');
-      localStorage.setItem('mle-theme', 'light');
-    }
+    const html = document.documentElement;
+    const next = currentTheme() === 'dark' ? 'light' : 'dark';
+    try {
+      if (next === systemTheme()) { delete html.dataset.theme; localStorage.removeItem('mle-theme'); }
+      else                        { html.dataset.theme = next; localStorage.setItem('mle-theme', next); }
+    } catch (e) { html.dataset.theme = next; }
+    syncThemeLabel();
     if (cy) cy.style(cyStyle());
   });
+  DARK_MQ.addEventListener?.('change', () => {
+    syncThemeLabel();
+    if (cy) cy.style(cyStyle());
+  });
+  syncThemeLabel();
 
   EL.openBtn.addEventListener('click', () => {
     if (window.showDirectoryPicker) openWithFSAPI();
@@ -186,8 +191,9 @@ function init() {
   });
 
   EL.sidebarToggle.addEventListener('click', () => {
-    EL.sidebar.classList.toggle('hidden');
-    EL.sbResizer.classList.toggle('hidden');
+    const hidden = EL.sidebar.classList.toggle('hidden');
+    EL.sbResizer.classList.toggle('hidden', hidden);
+    EL.sidebarToggle.setAttribute('aria-pressed', hidden ? 'false' : 'true');
   });
 
   EL.detailToggle.addEventListener('click', () => {

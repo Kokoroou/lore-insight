@@ -20,85 +20,99 @@
 </head>
 <body>
 
+<!-- Icon sprite (Lucide-style strokes, same set as MakerLens Assets; inline so the CSP needs no extra host) -->
+<svg class="icon-sprite" aria-hidden="true">
+  <symbol id="i-logo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/><path d="M7.5 12.5l2-2.5 1.5 1.8 1-1.3 1.5 2" stroke-width="1.6"/></symbol>
+  <symbol id="i-folder" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17V7.5A2.5 2.5 0 015.5 5H9l2 2.5h6A2.5 2.5 0 0119.5 10v.5"/><path d="M3 17l2.2-5.6A2 2 0 017.1 10H20a1 1 0 01.9 1.4l-2.4 6A2.5 2.5 0 0116.2 19H5a2 2 0 01-2-2z"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></symbol>
+  <symbol id="i-panel" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M15 4v16"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.4 8.2-8 9-4.6-.8-8-4.5-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-map" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4L3 6.5v13L9 17l6 2.5 6-2.5v-13L15 6.5z"/><path d="M9 4v13M15 6.5v13"/></symbol>
+  <symbol id="i-zap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3L5 13.5h6L10 21l8-10.5h-6z"/></symbol>
+  <symbol id="i-flow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="6" rx="1.5"/><rect x="14" y="15" width="7" height="6" rx="1.5"/><path d="M6.5 9v3.5a2 2 0 002 2h6"/><path d="M12.5 12.5l2 2-2 2"/></symbol>
+  <symbol id="i-empty" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-dasharray="3 3"><rect x="4" y="4" width="16" height="16" rx="3"/></symbol>
+  <symbol id="i-fit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V5a1 1 0 011-1h4M20 9V5a1 1 0 00-1-1h-4M4 15v4a1 1 0 001 1h4M20 15v4a1 1 0 01-1 1h-4"/></symbol>
+  <symbol id="i-zoom-in" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2M11 8v6M8 11h6"/></symbol>
+  <symbol id="i-zoom-out" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2M8 11h6"/></symbol>
+  <symbol id="i-image" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.8"/><path d="M21 16l-5-5-9 9"/></symbol>
+</svg>
+
 <!-- ╔════ HEADER ════╗ -->
-<div id="header">
+<header id="header">
   <div id="logo">
-    <svg class="logo-mark" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/><path d="M7.5 12.5l2-2.5 1.5 1.8 1-1.3 1.5 2" stroke-width="1.6"/></svg>
+    <span class="logo-mark"><svg width="18" height="18" aria-hidden="true"><use href="#i-logo"/></svg></span>
     <span class="logo-full">Maker<span>Lens</span><em class="logo-sub">Events</em></span>
+    <span class="logo-abbr">M<span>L</span><em class="logo-sub">Events</em></span>
   </div>
 
   <div id="header-right">
-    <span id="scan-status"></span>
-
-    <button class="btn-icon" id="about-btn" title="About">
-      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-        <circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.3"/>
-        <path d="M7 6.5v3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
-        <circle cx="7" cy="4.2" r=".75" fill="currentColor"/>
-      </svg>
+    <span id="scan-status" aria-live="polite"></span>
+    <button class="btn-icon" id="about-btn" title="About" aria-label="About">
+      <svg width="20" height="20" aria-hidden="true"><use href="#i-info"/></svg>
     </button>
-
-    <button class="btn-icon" id="theme-toggle" title="Toggle theme">
-      <svg class="icon-sun" width="15" height="15" viewBox="0 0 15 15" fill="none">
-        <circle cx="7.5" cy="7.5" r="2.5" stroke="currentColor" stroke-width="1.3"/>
-        <path d="M7.5 1v1.5M7.5 12.5V14M1 7.5h1.5M12.5 7.5H14M2.93 2.93l1.06 1.06M11.01 11.01l1.06 1.06M2.93 12.07l1.06-1.06M11.01 3.99l1.06-1.06" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
-      </svg>
-      <svg class="icon-moon" width="14" height="14" viewBox="0 0 14 14" fill="none">
-        <path d="M12 9.5A5.5 5.5 0 014.5 2a5.5 5.5 0 000 10A5.5 5.5 0 0012 9.5z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
+    <button class="btn-icon" id="theme-toggle" title="Toggle theme" aria-label="Toggle theme">
+      <svg class="icon-sun" width="20" height="20" aria-hidden="true"><use href="#i-sun"/></svg>
+      <svg class="icon-moon" width="20" height="20" aria-hidden="true"><use href="#i-moon"/></svg>
     </button>
-
-    <button class="btn-primary" id="open-btn">
-      <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-        <path d="M1 3.5A1.5 1.5 0 012.5 2H5l1.5 2H11A1.5 1.5 0 0112.5 5.5v5A1.5 1.5 0 0111 12H2.5A1.5 1.5 0 011 10.5V3.5z" stroke="currentColor" stroke-width="1.2" fill="none"/>
-      </svg>
-      Open Folder
+    <button class="btn-primary" id="open-btn" aria-label="Open game folder">
+      <svg width="18" height="18" aria-hidden="true"><use href="#i-folder"/></svg>
+      <span class="btn-label">Open Folder</span>
     </button>
   </div>
-</div>
+</header>
 
 <!-- ╔════ LAYOUT ════╗ -->
 <div id="layout">
 
   <!-- ── Sidebar ── -->
-  <div id="sidebar" class="hidden">
-    <div id="sb-header">
-      <span>Navigator</span>
-    </div>
+  <nav id="sidebar" class="hidden" aria-label="Maps and common events">
+    <div id="sb-header">Navigator</div>
     <div id="sb-list"></div>
-  </div>
+  </nav>
   <div id="sb-resizer" class="hidden"></div>
 
   <!-- ── Main ── -->
-  <div id="main">
+  <main id="main">
 
     <!-- Setup screen -->
     <div id="setup">
       <div id="setup-inner">
-        <h1 class="setup-title">Maker<span>Lens</span><em class="logo-sub">Events</em></h1>
-        <div class="setup-sub">
-          See how an RPG Maker MV or MZ game works: the dialogue, choices, conditions and jumps of every event as a flow graph.
-          Works on released games, no project or editor needed. Drag the game's root folder or its <code>data/</code> folder to start.
+        <div class="setup-hero">
+          <h1 class="setup-title">See how an RPG Maker game's events work</h1>
+          <p class="setup-sub">Dialogue, choices, conditions and jumps of every event as a flow graph — right in your browser.</p>
         </div>
 
         <div id="drop-zone">
-          <div class="dz-icon">🗂</div>
-          <div class="dz-title">Drop game folder here</div>
-          <div class="dz-sub">Supports RPG Maker MV · MZ</div>
-          <button class="btn-primary" id="open-game-btn" style="font-size:13px;padding:8px 24px">
-            Select Folder
-          </button>
+          <div class="dz-icon"><svg width="30" height="30" aria-hidden="true"><use href="#i-folder"/></svg></div>
+          <button class="btn-primary btn-lg" id="open-game-btn">Select Game Folder</button>
+          <div class="dz-hint">or drop the game folder (or its <code>data/</code> folder) anywhere on this page</div>
+          <ul class="engine-chips" aria-label="Supported engines">
+            <li>MV</li><li>MZ</li>
+          </ul>
+          <div id="setup-status" role="status"></div>
         </div>
 
-        <div id="setup-status"></div>
+        <div class="or-divider">or</div>
+
+        <div class="setup-alt">
+          <a class="btn-ghost" href="https://makerlens.kokoroou.workers.dev/assets/">
+            <svg width="18" height="18" aria-hidden="true"><use href="#i-image"/></svg>
+            View the game's images and music in MakerLens Assets
+          </a>
+        </div>
 
         <div class="privacy-note">
-          🔒 <strong>Private</strong> — everything runs in your browser, nothing is uploaded. Read-only: your game files are never changed.
-          Only an anonymous page count is kept (<a href="../assets/privacy.html#analytics">privacy</a>).
-        </div>
-        <div class="sibling-link">
-          Looking for the game's images and music? Open the same folder in
-          <a href="https://makerlens.kokoroou.workers.dev/assets/">MakerLens Assets</a>.
+          <svg width="16" height="16" aria-hidden="true"><use href="#i-shield"/></svg>
+          <strong>Your files never leave your device</strong>
+          <span class="sep">·</span> read-only
+          <span class="sep">·</span> <a href="../assets/privacy.html#analytics">Privacy</a>
         </div>
       </div>
     </div>
@@ -108,14 +122,11 @@
 
       <!-- Toolbar -->
       <div id="graph-toolbar">
-        <button class="btn-icon" id="sidebar-toggle" title="Toggle sidebar">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <path d="M2 4h10M2 7h10M2 10h10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
-          </svg>
+        <button class="btn-icon" id="sidebar-toggle" title="Toggle sidebar" aria-label="Toggle sidebar">
+          <svg width="18" height="18" aria-hidden="true"><use href="#i-menu"/></svg>
         </button>
-
         <span id="event-breadcrumb"></span>
-        <div id="page-tabs"></div>
+        <div id="page-tabs" role="tablist" aria-label="Event pages"></div>
       </div>
 
       <!-- Graph + detail -->
@@ -124,10 +135,17 @@
         <!-- Event picker (shown before selecting an event) -->
         <div id="event-picker" class="hidden">
           <div id="event-picker-inner">
-            <div class="ep-title">Select an event to visualize</div>
-            <div class="ep-sub">All events with commands are shown below</div>
+            <h2 class="ep-title">Select an event to visualize</h2>
+            <p class="ep-sub">All events with commands on this map</p>
             <div id="event-list-grid"></div>
           </div>
+        </div>
+
+        <!-- Shown when an event page has nothing to draw -->
+        <div id="empty-page-notice" class="empty-event-notice" hidden>
+          <div class="empty-event-notice-icon"><svg width="30" height="30" aria-hidden="true"><use href="#i-empty"/></svg></div>
+          <div class="empty-event-notice-title">No displayable commands</div>
+          <div class="empty-event-notice-sub">This page has no dialogue, choices, conditions, labels or jumps to visualize.</div>
         </div>
 
         <!-- Cytoscape canvas -->
@@ -135,83 +153,81 @@
 
         <!-- Zoom controls -->
         <div id="graph-controls">
-          <button class="btn-icon" id="cy-fit" title="Fit to screen">
-            <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-              <path d="M1.5 4.5V2A.5.5 0 012 1.5h2.5M11.5 4.5V2a.5.5 0 00-.5-.5H8.5M1.5 8.5V11a.5.5 0 00.5.5h2.5M11.5 8.5V11a.5.5 0 01-.5.5H8.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
-            </svg>
+          <button class="btn-icon" id="cy-fit" title="Fit to screen" aria-label="Fit to screen">
+            <svg width="18" height="18" aria-hidden="true"><use href="#i-fit"/></svg>
           </button>
-          <button class="btn-icon" id="cy-zoom-in" title="Zoom in">
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-              <circle cx="5.5" cy="5.5" r="3.5" stroke="currentColor" stroke-width="1.3"/>
-              <path d="M8.5 8.5l2.5 2.5M5.5 4v3M4 5.5h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
-            </svg>
+          <button class="btn-icon" id="cy-zoom-in" title="Zoom in" aria-label="Zoom in">
+            <svg width="18" height="18" aria-hidden="true"><use href="#i-zoom-in"/></svg>
           </button>
-          <button class="btn-icon" id="cy-zoom-out" title="Zoom out">
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-              <circle cx="5.5" cy="5.5" r="3.5" stroke="currentColor" stroke-width="1.3"/>
-              <path d="M8.5 8.5l2.5 2.5M4 5.5h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
-            </svg>
+          <button class="btn-icon" id="cy-zoom-out" title="Zoom out" aria-label="Zoom out">
+            <svg width="18" height="18" aria-hidden="true"><use href="#i-zoom-out"/></svg>
           </button>
         </div>
 
       </div><!-- /graph-wrap -->
     </div><!-- /graph-view -->
 
-  </div><!-- /main -->
+  </main><!-- /main -->
 
   <!-- ── Detail panel ── -->
-  <div id="detail-panel">
+  <aside id="detail-panel" aria-label="Node inspector" hidden>
     <div id="detail-header">
-      <span id="detail-header-title">Node Inspector</span>
-      <button class="btn-icon active" id="detail-toggle" title="Toggle inspector" style="width:22px;height:22px;border:none;background:none">
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-          <path d="M10 6H2M7 3l3 3-3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
+      <span id="detail-header-title">Node inspector</span>
+      <button class="btn-icon active" id="detail-toggle" title="Toggle inspector" aria-label="Toggle inspector">
+        <svg width="18" height="18" aria-hidden="true"><use href="#i-panel"/></svg>
       </button>
     </div>
     <div id="detail-body">
       <div class="detail-empty">Click a node to inspect it</div>
     </div>
-  </div>
+  </aside>
 
 </div><!-- /layout -->
 
 <!-- ╔════ ABOUT ════╗ -->
-<div id="about-modal" role="dialog" aria-modal="true">
+<div id="about-modal" role="dialog" aria-modal="true" aria-labelledby="about-title">
   <div id="about-panel">
-    <button id="about-close" title="Close">✕</button>
+    <button id="about-close" class="modal-close" title="Close (Esc)" aria-label="Close">
+      <svg width="20" height="20" aria-hidden="true"><use href="#i-x"/></svg>
+    </button>
 
-    <div class="about-logo">
-      <svg class="logo-mark" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/><path d="M7.5 12.5l2-2.5 1.5 1.8 1-1.3 1.5 2" stroke-width="1.6"/></svg>
-      <span class="logo-full">Maker<span>Lens</span><em class="logo-sub">Events</em></span>
-    </div>
+    <h2 class="about-logo" id="about-title">
+      <span class="logo-mark"><svg width="18" height="18" aria-hidden="true"><use href="#i-logo"/></svg></span>
+      <span>Maker<span>Lens</span><em class="logo-sub">Events</em></span>
+    </h2>
     <div class="about-sub">RPG Maker event flow viewer — part of <a href="https://makerlens.kokoroou.workers.dev/">MakerLens</a></div>
 
     <div class="about-section">
-      <div class="about-section-title">How to Use</div>
-      <ul class="about-list">
+      <div class="about-section-title">How to use</div>
+      <ol class="about-list">
         <li>Click <strong>Open Folder</strong> and select your RPG Maker game's root folder (or its <code>data/</code> subfolder).</li>
         <li>Pick a map from the sidebar, then click an event to view its command flow as a node graph.</li>
-        <li>Use page tabs to switch between event pages. Click any node to inspect its full content in the right panel.</li>
+        <li>Use the page tabs to switch between event pages. Click any node to inspect its full content in the right panel.</li>
         <li>Common Events are listed below the maps in the sidebar.</li>
-      </ul>
+      </ol>
+      <p class="about-more">Want the game's images and music? Open <a href="https://makerlens.kokoroou.workers.dev/assets/">MakerLens Assets</a>.</p>
     </div>
 
     <div class="about-section">
-      <div class="about-section-title">Node Types</div>
+      <div class="about-section-title">Node types</div>
       <div class="legend">
-        <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div> Dialogue</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#60a5fa"></div> Choice</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#a78bfa"></div> Condition</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#34d399"></div> Label</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#fb923c"></div> Jump</div>
+        <span class="legend-item"><span class="legend-dot dot-dialogue"></span>Dialogue</span>
+        <span class="legend-item"><span class="legend-dot dot-choice"></span>Choice</span>
+        <span class="legend-item"><span class="legend-dot dot-condition"></span>Condition</span>
+        <span class="legend-item"><span class="legend-dot dot-label"></span>Label</span>
+        <span class="legend-item"><span class="legend-dot dot-jump"></span>Jump</span>
       </div>
     </div>
 
     <div class="about-note">
-      🔒 <strong>Private and read-only:</strong> all processing happens in your browser.
-      No files are uploaded, transmitted, or stored on any server, and the game files are never modified.
-      Intended for your own games or games you have permission to study.
+      <div class="note-row">
+        <svg width="16" height="16" aria-hidden="true"><use href="#i-shield"/></svg>
+        <span><strong>Private:</strong> all processing happens in your browser. No files are uploaded, transmitted, or stored on any server. Only an anonymous page count is kept (<a href="../assets/privacy.html#analytics">privacy</a>).</span>
+      </div>
+      <div class="note-row">
+        <svg width="16" height="16" aria-hidden="true"><use href="#i-eye"/></svg>
+        <span><strong>Read-only:</strong> the game files are never modified. Intended for your own games or games you have permission to study.</span>
+      </div>
     </div>
   </div>
 </div>
@@ -219,9 +235,9 @@
 <!-- Drag overlay -->
 <div id="drag-overlay">
   <div id="drag-inner">
-    <div class="dz-icon">🗂</div>
+    <div class="dz-icon"><svg width="34" height="34" aria-hidden="true"><use href="#i-folder"/></svg></div>
     Drop game folder here
-    <span style="font-size:11px;font-weight:400;color:var(--t2)">Release to load</span>
+    <span id="drag-msg">Release to load</span>
   </div>
 </div>
 

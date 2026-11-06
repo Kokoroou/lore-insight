@@ -6,6 +6,25 @@ function el(tag, cls, text) {
   return e;
 }
 
+// <svg><use href="#i-…"/></svg> from the icon sprite in index.html
+function icon(name, size) {
+  const NS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(NS, 'svg');
+  svg.setAttribute('width', size || 16);
+  svg.setAttribute('height', size || 16);
+  svg.setAttribute('aria-hidden', 'true');
+  const use = document.createElementNS(NS, 'use');
+  use.setAttribute('href', '#i-' + name);
+  svg.appendChild(use);
+  return svg;
+}
+
+function iconEl(name, cls) {
+  const wrap = el('span', cls || 'sb-icon');
+  wrap.appendChild(icon(name));
+  return wrap;
+}
+
 function fieldEl(label, value) {
   const wrap = el('div', 'detail-field');
   wrap.appendChild(el('div', 'detail-field-label', label));

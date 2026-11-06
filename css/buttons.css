@@ -1,41 +1,70 @@
-/* ── Buttons ─────────────────────────────────────────── */
+/* ── Buttons (same sizes as MakerLens Assets css/layout.css) ── */
 .btn-primary {
-  display: flex; align-items: center; gap: 6px;
-  padding: 6px 14px;
-  background: var(--a);
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  height: 36px;
+  padding: 0 16px;
+  background: var(--a-bg);
   color: var(--a-on);
-  font-weight: 700;
-  font-size: 12px;
-  letter-spacing: .02em;
+  font-weight: 600;
+  font-size: 14px;
   border-radius: var(--r);
-  transition: opacity .15s, box-shadow .15s;
+  box-shadow: var(--shadow-sm);
+  transition: filter .15s var(--ease), box-shadow .15s var(--ease), transform .1s var(--ease);
   white-space: nowrap;
 }
-.btn-primary:hover { opacity: .88; box-shadow: 0 0 16px var(--a40); }
+.btn-primary:hover  { filter: brightness(1.08); box-shadow: 0 4px 14px var(--a40); }
+.btn-primary:active { transform: translateY(1px); }
+.btn-primary:disabled { opacity: .7; cursor: progress; }
+.btn-lg { height: 48px; padding: 0 28px; font-size: 15px; border-radius: var(--r-lg); }
+
 .btn-ghost {
-  display: flex; align-items: center; gap: 5px;
-  padding: 5px 11px;
-  background: var(--s2);
-  border: 1px solid var(--bd);
-  color: var(--t2);
-  font-size: 12px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  height: 40px;
+  padding: 0 16px;
+  background: var(--s1);
+  border: 1px solid var(--bd2);
+  color: var(--t);
+  font-size: 14px;
+  font-weight: 500;
   border-radius: var(--r);
-  transition: border-color .15s, color .15s;
+  transition: border-color .15s var(--ease), background .15s var(--ease), color .15s var(--ease);
   white-space: nowrap;
+  text-decoration: none;
 }
-.btn-ghost:hover { border-color: var(--bd2); color: var(--t); }
+.btn-ghost svg { color: var(--t2); }
+.btn-ghost:hover { border-color: var(--a40); background: var(--a10); }
+.btn-ghost:hover svg { color: var(--a); }
+
 .btn-icon {
-  display: flex; align-items: center; justify-content: center;
-  width: 30px; height: 30px;
-  background: var(--s2);
-  border: 1px solid var(--bd);
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px;
+  background: transparent;
+  border: 1px solid transparent;
   color: var(--t2);
   border-radius: var(--r);
-  transition: border-color .15s, color .15s, background .15s;
+  transition: border-color .15s var(--ease), color .15s var(--ease), background .15s var(--ease);
   flex-shrink: 0;
 }
-.btn-icon:hover { border-color: var(--bd2); color: var(--t); background: var(--s3); }
+.btn-icon:hover { color: var(--t); background: var(--s2); border-color: var(--bd); }
+.btn-icon[aria-pressed="true"],
 .btn-icon.active { background: var(--a10); border-color: var(--a40); color: var(--a); }
-.icon-moon { display: none; }
-html[data-theme="light"] .icon-sun  { display: none; }
-html[data-theme="light"] .icon-moon { display: block; }
+
+/* theme toggle: show the icon of the theme you'd switch TO */
+.icon-sun { display: none; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .icon-sun  { display: block; }
+  :root:not([data-theme="light"]) .icon-moon { display: none; }
+}
+:root[data-theme="dark"] .icon-sun  { display: block; }
+:root[data-theme="dark"] .icon-moon { display: none; }
+
+.status-spinner {
+  display: inline-block;
+  width: 14px; height: 14px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  opacity: .8;
+  animation: spin .7s linear infinite;
+  flex-shrink: 0;
+}

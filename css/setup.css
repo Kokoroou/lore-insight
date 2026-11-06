@@ -1,38 +1,110 @@
-/* ── Setup screen ────────────────────────────────────── */
+/* ── Setup screen (same as MakerLens Assets css/setup.css) ── */
 #setup {
-  flex: 1; display: flex; align-items: center; justify-content: center;
-  padding: 32px 24px; overflow-y: auto;
-}
-#setup-inner { width: 100%; max-width: 560px; display: flex; flex-direction: column; gap: 14px; }
-.setup-title { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -.01em; }
-.setup-title span { color: var(--a); }
-.setup-sub { font-size: 12px; color: var(--t2); line-height: 1.7; }
-#drop-zone {
-  background: var(--s1); border: 1.5px dashed var(--bd2); border-radius: 8px;
-  padding: 48px 32px; display: flex; flex-direction: column;
-  align-items: center; gap: 14px; text-align: center;
-  transition: border-color .2s, background .2s; cursor: pointer;
-}
-#drop-zone:hover, #drop-zone.drag-over { border-color: var(--a40); background: var(--a10); }
-.dz-icon { font-size: 48px; line-height: 1; }
-.dz-title { font-size: 14px; font-weight: 600; color: var(--t); }
-.dz-sub { font-size: 11px; color: var(--t3); }
-#setup-status {
-  font-size: 12px; padding: 6px 12px; border-radius: var(--r); min-height: 28px;
-}
-#setup-status:empty { display: none; }
-#setup-status.ok   { color: var(--ok);  background: rgba(52,211,153,.08); }
-#setup-status.err  { color: var(--err); background: rgba(248,113,113,.08); }
-#setup-status.info { color: var(--t2);  background: var(--s2); display: flex; align-items: center; gap: 8px; }
-.spinner {
-  width: 11px; height: 11px; border: 1.5px solid var(--bd2);
-  border-top-color: var(--a); border-radius: 50%;
-  animation: spin .7s linear infinite; flex-shrink: 0;
-}
-.privacy-note {
-  font-size: 11px; color: var(--t3); padding: 9px 12px;
-  background: var(--s1); border: 1px solid var(--bd); border-radius: var(--r); line-height: 1.6;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 16px;
+  overflow-y: auto;
 }
 
-.sibling-link { margin-top: 10px; font-size: 12px; color: var(--t2); text-align: center; }
-.sibling-link a, .about-sub a { color: var(--a); text-decoration: underline; text-underline-offset: 2px; }
+#setup-inner {
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.setup-hero { text-align: center; margin-bottom: 8px; }
+.setup-title {
+  font-size: clamp(24px, 4vw, 32px);
+  font-weight: 700;
+  letter-spacing: -.02em;
+  line-height: 1.2;
+  color: var(--t);
+  text-wrap: balance;
+}
+.setup-sub {
+  margin-top: 8px;
+  font-size: 15px;
+  color: var(--t2);
+  text-wrap: balance;
+}
+
+/* ── Drop zone ───────────────────────────────────────── */
+#drop-zone {
+  background: var(--s1);
+  border: 1.5px dashed var(--bd2);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 40px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color .2s var(--ease), background .2s var(--ease);
+}
+#drop-zone:hover { border-color: var(--a40); }
+
+.dz-icon {
+  display: grid; place-items: center;
+  width: 64px; height: 64px;
+  border-radius: 16px;
+  background: var(--a10);
+  color: var(--a);
+}
+#drag-inner .dz-icon { width: 72px; height: 72px; }
+.dz-hint { font-size: 13px; color: var(--t3); }
+
+.engine-chips {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 6px;
+  list-style: none;
+}
+.engine-chips li {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--t2);
+  background: var(--s2);
+  border: 1px solid var(--bd);
+  border-radius: 99px;
+  padding: 2px 10px;
+  white-space: nowrap;
+}
+
+#setup-status {
+  font-size: 13px;
+  padding: 8px 12px;
+  border-radius: var(--r);
+  max-width: 100%;
+}
+#setup-status:empty { display: none; }
+#setup-status.ok   { color: var(--ok);   background: color-mix(in srgb, var(--ok) 10%, transparent); }
+#setup-status.err  { color: var(--err);  background: color-mix(in srgb, var(--err) 10%, transparent); }
+#setup-status.warn { color: var(--warn); background: color-mix(in srgb, var(--warn) 12%, transparent); }
+#setup-status.info { color: var(--t2);   background: var(--s2); display: flex; align-items: center; gap: 8px; }
+
+/* ── Divider + sibling tool ──────────────────────────── */
+.or-divider {
+  display: flex; align-items: center; gap: 12px;
+  font-size: 12px; color: var(--t3);
+  text-transform: uppercase; letter-spacing: .08em;
+}
+.or-divider::before, .or-divider::after { content: ''; flex: 1; height: 1px; background: var(--bd); }
+.setup-alt { display: flex; justify-content: center; }
+
+/* ── Privacy note ────────────────────────────────────── */
+.privacy-note {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  flex-wrap: wrap;
+  font-size: 13px; color: var(--t2);
+  padding: 4px 0;
+  text-align: center;
+}
+.privacy-note svg { color: var(--a); }
+.privacy-note a, .about-note a, .about-more a, .about-sub a { color: var(--a); text-decoration: underline; text-underline-offset: 2px; text-decoration-color: var(--a40); }
+.privacy-note a:hover, .about-note a:hover, .about-more a:hover, .about-sub a:hover { text-decoration-color: currentColor; }
+.privacy-note strong { color: var(--t); font-weight: 600; }
+.privacy-note .sep { color: var(--bd2); }

@@ -1,40 +1,46 @@
-/* ── Header ──────────────────────────────────────────── */
+/* ── Header (same as MakerLens Assets) ───────────────── */
 #header {
   position: relative;
   z-index: 20;
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 0 14px;
-  height: 48px;
+  gap: 12px;
+  padding: 0 16px;
+  height: var(--hh);
   background: var(--header-bg);
-  backdrop-filter: blur(16px);
+  backdrop-filter: saturate(1.4) blur(16px);
+  -webkit-backdrop-filter: saturate(1.4) blur(16px);
   border-bottom: 1px solid var(--bd);
   flex-shrink: 0;
 }
-#header::before {
-  content: '';
-  position: absolute;
-  left: 0; top: 8px; bottom: 8px;
-  width: 2px;
-  background: var(--a);
-  border-radius: 0 2px 2px 0;
-  box-shadow: 0 0 8px var(--a40);
-}
-#logo {
-  display: flex; align-items: center; gap: 7px;
-  font-size: 14px; font-weight: 700; letter-spacing: .02em;
-  color: var(--t); flex-shrink: 0; padding-left: 6px;
-}
-#logo span { color: var(--a); }
-#header-right { display: flex; align-items: center; gap: 8px; margin-left: auto; }
-#scan-status { font-size: 11px; color: var(--t2); white-space: nowrap; }
 
-/* Brand: "MakerLens" + product suffix, same mark as MakerLens Assets */
-.logo-mark { color: var(--a); flex-shrink: 0; }
-.logo-sub {
-  font-style: normal; font-weight: 600; color: var(--t2);
-  margin-left: 5px; letter-spacing: .01em;
+#logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -.01em;
+  color: var(--t);
+  flex-shrink: 0;
+  text-decoration: none;
 }
-#logo .logo-full, .about-logo .logo-full { color: var(--t); }
-#logo .logo-full span, .about-logo .logo-full span { color: var(--a); }
+#logo span span, .about-logo span span { color: var(--a); }
+.logo-mark {
+  display: grid; place-items: center;
+  width: 30px; height: 30px;
+  border-radius: var(--r);
+  background: var(--a10);
+  border: 1px solid var(--a20);
+}
+.logo-mark svg { color: var(--a); }
+.logo-abbr { display: none; }
+/* product suffix: "Maker**Lens** Events" */
+.logo-sub { font-style: normal; font-weight: 600; color: var(--t2); margin-left: 6px; }
+
+#header-right { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+#scan-status {
+  font-size: 12px; color: var(--t2); white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  padding-right: 4px;
+}

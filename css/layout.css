@@ -1,8 +1,30 @@
 /* ── App layout ──────────────────────────────────────── */
 #layout {
-  position: relative; z-index: 1;
-  display: flex; flex: 1; overflow: hidden;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex: 1;
+  overflow: hidden;
 }
 
-/* ── Main area ───────────────────────────────────────── */
-#main { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+#main {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Mobile breakpoint (same as MakerLens Assets) ────── */
+@media (max-width: 600px) {
+  #header               { gap: 6px; padding: 0 12px; }
+  .logo-full            { display: none; }
+  .logo-abbr            { display: inline; }
+  #header-right         { gap: 4px; }
+  .btn-icon             { width: 44px; height: 44px; }
+  #open-btn .btn-label  { display: none; }
+  #open-btn             { width: 44px; height: 44px; padding: 0; }
+  #scan-status          { display: none; }
+  #about-panel          { padding: 22px 18px; }
+  .sb-item, .sb-folder  { min-height: 44px; }
+}

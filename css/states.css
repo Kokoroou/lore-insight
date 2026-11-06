@@ -1,26 +1,21 @@
-/* ── Empty state (no events / no nodes) ─────────────── */
-.empty-graph {
-  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 8px; color: var(--t3);
-}
-.empty-graph-icon { font-size: 32px; }
-.empty-graph-text { font-size: 12px; }
-
-/* ── Dimmed event cards ──────────────────────────────── */
-.ev-card.ev-empty {
-  opacity: .55;
-  border-style: dashed;
-}
-.ev-card.ev-empty .ev-card-meta::after {
-  content: ' · no flow';
-  color: var(--t3);
-}
-
-/* ── Empty event notice ──────────────────────────────── */
+/* ── Empty states ────────────────────────────────────── */
 .empty-event-notice {
+  position: absolute; inset: 0; z-index: 4;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 8px; padding: 40px 24px; text-align: center;
+  background: var(--bg);
+  pointer-events: none;
 }
-.empty-event-notice-icon { font-size: 28px; opacity: .5; }
-.empty-event-notice-title { font-size: 12px; font-weight: 600; color: var(--t2); }
-.empty-event-notice-sub { font-size: 11px; color: var(--t3); max-width: 220px; line-height: 1.6; }
+.empty-event-notice[hidden] { display: none; }
+.empty-event-notice-icon {
+  display: grid; place-items: center;
+  width: 64px; height: 64px; margin-bottom: 4px;
+  border-radius: 16px;
+  background: var(--s2); color: var(--t3);
+}
+.empty-event-notice-title { font-size: 15px; font-weight: 600; color: var(--t); }
+.empty-event-notice-sub { font-size: 13px; color: var(--t2); max-width: 300px; line-height: 1.6; }
+
+/* ── Dimmed event cards ──────────────────────────────── */
+.ev-card.ev-empty { opacity: .6; border-style: dashed; }
+.ev-card.ev-empty .ev-card-meta::after { content: ' · no flow'; color: var(--t3); }
