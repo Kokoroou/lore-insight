@@ -1,0 +1,35 @@
+# Ask Kokoroou/makerlens to rebuild and redeploy https://makerlens.kokoroou.workers.dev/
+# after every push to main (its Deploy workflow listens for "tool-updated").
+#
+# Needs the secret MAKERLENS_DISPATCH_TOKEN: a fine-grained personal access token
+# limited to the Kokoroou/makerlens repository with "Contents: Read and write"
+# (required by the repository_dispatch API). Without it this job only prints a
+# notice, and makerlens can still be deployed by hand (Actions → Deploy).
+name: Notify MakerLens
+
+on:
+  push:
+    branches: [main]
+
+permissions: {}
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Send repository_dispatch to Kokoroou/makerlens
+        env:
+          TOKEN: ${{ secrets.MAKERLENS_DISPATCH_TOKEN }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+        run: |
+          if [ -z "$TOKEN" ]; then
+            echo "::notice::MAKERLENS_DISPATCH_TOKEN is not set; deploy makerlens by hand."
+            exit 0
+          fi
+          curl -fsS -X POST https://api.github.com/repos/Kokoroou/makerlens/dispatches \
+            -H "Authorization: Bearer $TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            -d "{\"event_type\":\"tool-updated\",\"client_payload\":{\"repo\":\"$REPO\",\"sha\":\"$SHA\"}}"
