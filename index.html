@@ -4,8 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <!-- Content-Security-Policy: scripts, styles and everything else load only from this site
-     (libraries are vendored in vendor/). The page makes no network requests with game data. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+     (libraries are vendored in vendor/), plus the anonymous GoatCounter pixel (js/analytics.js).
+     The page makes no network requests with game data. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://kokoroou.goatcounter.com; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <title>RPG Maker Event Viewer — MV &amp; MZ event flow graph | MakerLens Events</title>
 <meta name="description" content="Free online RPG Maker event viewer. See the dialogue, choices, conditions and switches of any MV or MZ game as a flow graph, right in your browser. No project, no install, files never uploaded.">
 <meta name="keywords" content="RPG Maker event viewer, RPG Maker MV event flow, RPG Maker MZ events, common events viewer, RPG Maker switches, RPG Maker dialogue tree">
@@ -15,6 +16,7 @@
 <meta property="og:description" content="See the event flow of any RPG Maker MV or MZ game as a node graph. Runs in your browser — your files are never uploaded.">
 <link rel="stylesheet" href="css/style.css">
 <script src="js/theme-init.js"></script>
+<script src="js/analytics.js" defer></script>
 </head>
 <body>
 
@@ -92,6 +94,7 @@
 
         <div class="privacy-note">
           🔒 <strong>Private</strong> — everything runs in your browser, nothing is uploaded. Read-only: your game files are never changed.
+          Only an anonymous page count is kept (<a href="../assets/privacy.html#analytics">privacy</a>).
         </div>
         <div class="sibling-link">
           Looking for the game's images and music? Open the same folder in

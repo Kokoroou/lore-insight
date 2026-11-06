@@ -81,7 +81,8 @@ The tool never edits or exports game files. In-place dialogue editing and the ma
 ## Conventions
 
 - **Brand: MakerLens Events.** Same family as MakerLens Assets (https://makerlens.kokoroou.workers.dev/assets/): the magnifier mark, the green `--a` action colour and the "Maker**Lens** + suffix" wordmark. Do not reintroduce the LoreInsight name in the UI.
-- **No third-party hosts.** Libraries live in `vendor/` (see `vendor/README.md`); the CSP in `index.html` allows `'self'` only, so no inline scripts or `onclick=` attributes (put code in `js/`).
+- **No third-party hosts.** Libraries live in `vendor/` (see `vendor/README.md`); the CSP in `index.html` allows `'self'` only (plus the GoatCounter pixel in `img-src`), so no inline scripts or `onclick=` attributes (put code in `js/`).
+- **Analytics never include game data.** `js/analytics.js` sends one GoatCounter page view (path, referrer, the traffic-source params in `SOURCE_PARAMS`) only on `makerlens.kokoroou.workers.dev`, and nothing with Do Not Track / GPC. Never send file, map or event names, dialogue or other game data. It is documented in MakerLens Assets `privacy.html#analytics`; update that page if the payload changes.
 - **No framework, no build.** All JS is plain ES5-compatible (no `import`/`export`). Scripts are loaded in order: `theme-init.js` (head) → vendor libs → `constants.js` → `parser.js` → … → `app.js`. `parser.js` accesses the global `S` object from `app.js` directly.
 - **`S`** is the single global state object. EL is the DOM ref cache populated at `DOMContentLoaded`.
 - CSS uses design tokens as custom properties (`--bg`, `--s1..s3`, `--bd/bd2`, `--a`, `--t/t2/t3`). Both dark (default) and light themes are defined in `:root` and `html[data-theme="light"]`.
