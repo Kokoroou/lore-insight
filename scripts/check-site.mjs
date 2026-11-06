@@ -19,7 +19,7 @@ import { fileURLToPath } from 'node:url';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const APP = 'index.html';
 const PAGES = [APP, 'faq.html'];
-const COUNTER = 'https://kokoroou.goatcounter.com';
+const COUNTER = 'https://makerlens.goatcounter.com';
 const FEEDBACK = 'https://feedback.kokoroou.workers.dev';   // inbox in the private repo Kokoroou/feedbacks
 
 const errors = [];
