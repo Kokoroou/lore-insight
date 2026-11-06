@@ -4,6 +4,9 @@
 // 2. The map tree shows as soon as MapInfos/System/Actors/CommonEvents are read;
 //    Map###.json files are read on demand (the map the user opens first) and the
 //    rest in the background, which waits while a foreground read is running.
+// 3. Every open goes through runLoad(), which drives the Loader overlay (loadui.js).
+//    The new game only replaces the open one at commit, so Cancel or an error
+//    before that keeps what was on screen.
 
 const SPINNER = '<span class="status-spinner" aria-hidden="true"></span> ';
 const MAP_FILE  = /^Map(\d{3})\.json$/i;
@@ -12,17 +15,49 @@ const DATA_FILE = /^(MapInfos|Actors|System|CommonEvents|Map\d{3})\.json$/i;
 const SKIP_DIRS = /^(img|audio|movies|fonts|effects|icon|js|css|save|locales?|node_modules|\.git)$/i;
 const DATA_DEPTH = 3;   // root/, game/, game/www/, game/www/data/
 
-let loadGen = 0;            // bumped by every loadFolder(): older background work stops
+let seq = 0;                // id of the latest load started
+let current = 0;            // id of the load whose game is on screen (set by commit)
 let mapReads = new Map();   // mapId → Promise<map|null>, one read per map
-let loadInfo = null;        // progress of the current folder's map reading
-const Fg = { active: 0 };   // foreground map reads in flight (the background waits)
+let loadInfo = null;        // progress of the current game's map reading
+const Fg = { active: 0 };   // foreground reads in flight (the background waits)
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
+const abort = msg => new DOMException(msg, 'AbortError');
 
-async function loadFolder(files) {
-  const gen = ++loadGen;
-  setStatus('info', SPINNER + 'Reading game data…');
+// Every way of opening a game goes through here: it drives the Loader overlay.
+// The new game is built on the side and only replaces the open one at commit,
+// so Cancel or a failure before that keeps what was on screen.
+async function runLoad(name, getFiles) {
+  const id = ++seq;
+  const guard = () => { if (id !== seq) throw abort('Superseded'); Loader.check(); };
+  Fg.active++;   // the previous game's background reading yields meanwhile
+  Loader.open({ name, steps: ['detect', 'read', 'map'] });
+  Loader.step('detect', 'active');
+  try {
+    const files = await getFiles(guard);
+    guard();
+    await loadFiles(files, id, guard);
+  } catch (e) {
+    if (id !== seq) return;   // a newer load took over the overlay
+    if (e && e.name === 'AbortError') { Loader.close(); setStatus('', ''); }
+    else failLoad('Could not open folder: ' + ((e && e.message) || e));
+  } finally {
+    Fg.active--;
+  }
+}
 
+// <input webkitdirectory> and plain file drops: the File list is already in hand.
+function loadFolder(files) {
+  const first = files[0] && (files[0].webkitRelativePath || files[0]._dragPath || '');
+  return runLoad(first.includes('/') ? first.split(/[\\/]/)[0] : '', async () => files);
+}
+
+function failLoad(message) {
+  setStatus('err', message);
+  Loader.fail(message);
+}
+
+async function loadFiles(files, id, guard) {
   const fileMap = new Map();
   for (const f of files) {
     const rel = (f._dragPath || f.webkitRelativePath || f.name).replace(/\\/g, '/');
@@ -42,23 +77,28 @@ async function loadFolder(files) {
   }
 
   if (!dataPrefix && mapFiles.size === 0) {
-    setStatus('err', 'No RPG Maker data folder found. Make sure to select the game root or data/ folder.');
-    return;
+    return failLoad('No RPG Maker data folder found. Make sure to select the game root or data/ folder.');
   }
-  if (mapFiles.size === 0) {
-    setStatus('err', 'No Map###.json files found in the data folder.');
-    return;
-  }
+  if (mapFiles.size === 0) return failLoad('No Map###.json files found in the data folder.');
+  Loader.step('detect', 'done', `${mapFiles.size} map file${mapFiles.size === 1 ? '' : 's'}`);
 
-  const readJson = async name => {
+  // ── read: the four small files, in parallel ──
+  const names = ['MapInfos.json', 'Actors.json', 'System.json', 'CommonEvents.json'];
+  let read = 0;
+  Loader.step('read', 'active', `0/${names.length}`);
+  Loader.progress(0, names.length);
+  const [infos, actors, system, cevs] = await Promise.all(names.map(async name => {
     const f = findFile(fileMap, dataPrefix, name);
-    if (!f) return null;
-    try { return JSON.parse(await f.text()); } catch { return null; }
-  };
-  const [infos, actors, system, cevs] = await Promise.all(
-    ['MapInfos.json', 'Actors.json', 'System.json', 'CommonEvents.json'].map(readJson));
-  if (gen !== loadGen) return;   // another folder was opened meanwhile
+    let json = null;
+    if (f) { try { json = JSON.parse(await f.text()); } catch {} }
+    Loader.detail('read', `${++read}/${names.length}`);
+    Loader.progress(read, names.length);
+    return json;
+  }));
+  guard();   // last chance to cancel: from here the new game replaces the open one
 
+  // ── commit ──
+  current = id;
   S.mapInfos = {};
   S.collapsedFolders = new Set();
   (Array.isArray(infos) ? infos : []).forEach((info, i) => {
@@ -80,13 +120,16 @@ async function loadFolder(files) {
   mapReads = new Map();
   loadInfo = { total: S.mapFiles.size, done: 0, picked: false };
 
+  Loader.step('read', 'done');
+  Loader.step('map', 'active', `0/${loadInfo.total} maps read`);
+  Loader.commit();
+  setStatus('info', SPINNER + 'Reading maps…');
   renderSidebar();
   EL.sidebar.classList.remove('hidden');
   EL.sbResizer.classList.remove('hidden');
-  setStatus('info', SPINNER + 'Reading maps…');
   showMapProgress();
 
-  S.bgDone = readMapsInBackground(gen);
+  S.bgDone = readMapsInBackground(id);
 }
 
 /* ── Map reading: the one on screen first, the rest in the background ── */
@@ -94,7 +137,7 @@ function ensureMap(mapId) {
   if (S.maps.has(mapId)) return Promise.resolve(S.maps.get(mapId));
   if (!mapReads.has(mapId)) {
     if (!S.mapFiles.has(mapId)) return Promise.resolve(null);
-    mapReads.set(mapId, readMap(mapId, loadGen));
+    mapReads.set(mapId, readMap(mapId, current));
   }
   return mapReads.get(mapId);
 }
@@ -105,11 +148,11 @@ async function openMap(mapId) {
   try { return await ensureMap(mapId); } finally { Fg.active--; }
 }
 
-async function readMap(mapId, gen) {
+async function readMap(mapId, id) {
   const file = S.mapFiles.get(mapId);
   let data = null;
   try { data = parseMapJson(JSON.parse(await file.text()), mapId, S.mapInfos); } catch {}
-  if (gen !== loadGen) return null;
+  if (id !== current) return null;   // another game was opened meanwhile
   S.mapFiles.delete(mapId);
   if (data && data.events.length > 0) S.maps.set(mapId, data);
   else data = null;
@@ -133,14 +176,14 @@ function mapReadOrder() {
   return order.filter(id => S.mapFiles.has(id));
 }
 
-async function readMapsInBackground(gen) {
-  for (const id of mapReadOrder()) {
-    while (Fg.active && gen === loadGen) await sleep(30);
-    if (gen !== loadGen) return;
-    await ensureMap(id);
+async function readMapsInBackground(id) {
+  for (const mapId of mapReadOrder()) {
+    while (Fg.active && id === current) await sleep(30);
+    if (id !== current) return;
+    await ensureMap(mapId);
     await sleep(0);   // let the page paint and handle input between maps
   }
-  if (gen === loadGen) finishLoad();
+  if (id === current) finishLoad();
 }
 
 function mapRead(mapId, data) {
@@ -150,16 +193,24 @@ function mapRead(mapId, data) {
   if (data && count) { count.textContent = data.events.length; count.classList.remove('pending'); count.removeAttribute('title'); }
   else refreshSidebarSoon();   // a map without events leaves the tree
 
-  // Open the first map with events, unless the user already picked something.
+  // Open the first map with events, unless the user already picked one.
   if (data && !loadInfo.picked && S.selectedMapId == null) {
     loadInfo.picked = true;
     if (typeof Feedback !== 'undefined') Feedback.noteOpen();   // may ask for a rating from the 2nd game (feedback.js)
     selectMap(mapId);
   }
+  if (loadInfo.picked && Loader.active) {
+    Loader.step('map', 'done');
+    Loader.close();
+  }
 }
 
 function showMapProgress() {
-  if (EL.scanStatus) EL.scanStatus.textContent = `Reading maps ${loadInfo.done}/${loadInfo.total}…`;
+  EL.scanStatus.textContent = `Reading maps ${loadInfo.done}/${loadInfo.total}…`;
+  if (Loader.active) {
+    Loader.detail('map', `${loadInfo.done}/${loadInfo.total} maps read`);
+    Loader.progress(loadInfo.done, loadInfo.total);
+  }
 }
 
 function finishLoad() {
@@ -168,7 +219,7 @@ function finishLoad() {
     EL.scanStatus.textContent = '';
     EL.sidebar.classList.add('hidden');
     EL.sbResizer.classList.add('hidden');
-    setStatus('err', 'No events found in any map file.');
+    failLoad('No events found in any map file.');
     return;
   }
   const totalEvents = [...S.maps.values()].reduce((s, m) => s + m.events.length, 0);
@@ -230,11 +281,12 @@ const FS_ENTRY = {
 // Breadth-first from the selected folder: the first folder holding Map###.json wins
 // (a folder named data first at each level). Returns lazy file-likes for the
 // data/*.json files only; nothing is read until text() is called.
-async function findDataFiles(root, fs) {
+async function findDataFiles(root, fs, onDir) {
   let level = [{ dir: root, path: '' }];
   for (let depth = 0; depth <= DATA_DEPTH && level.length; depth++) {
     const next = [];
     for (const { dir, path } of level) {
+      if (onDir) onDir(path);
       const kids = await fs.list(dir);
       const files = kids.filter(k => !k.isDir && DATA_FILE.test(k.name));
       if (files.some(k => MAP_FILE.test(k.name))) {
@@ -264,11 +316,10 @@ async function openWithFSAPI() {
   await openFolder(dir, FS_HANDLE);
 }
 
-async function openFolder(root, fs) {
-  try {
-    setStatus('info', SPINNER + 'Looking for the data folder…');
-    await loadFolder(await findDataFiles(root, fs));
-  } catch (e) {
-    setStatus('err', 'Could not open folder: ' + e.message);
-  }
+// A directory handle (picker) or entry (drag & drop): only data/*.json is listed.
+function openFolder(root, fs) {
+  return runLoad(root.name || '', guard => findDataFiles(root, fs, path => {
+    guard();
+    Loader.detail('detect', path ? path : 'looking in the folder…');
+  }));
 }

@@ -358,6 +358,28 @@
   </div>
 </div>
 
+<!-- Loading overlay (shown while a game folder is being opened) -->
+<div id="loader" role="dialog" aria-modal="true" aria-labelledby="loader-title" aria-describedby="loader-live">
+  <div id="loader-card">
+    <div class="loader-head">
+      <div class="loader-icon"><svg width="22" height="22" aria-hidden="true"><use href="#i-folder"/></svg></div>
+      <div class="loader-titles">
+        <div id="loader-title">Opening game folder</div>
+        <div id="loader-name"></div>
+      </div>
+      <div id="loader-pct" aria-hidden="true"></div>
+    </div>
+    <div id="loader-bar" role="progressbar" aria-labelledby="loader-title" aria-valuemin="0" aria-valuemax="100"><div id="loader-fill"></div></div>
+    <ol id="loader-steps"></ol>
+    <div id="loader-error" role="alert"></div>
+    <div id="loader-live" class="sr-only" aria-live="polite"></div>
+    <div class="loader-foot">
+      <span class="loader-note"><svg width="14" height="14" aria-hidden="true"><use href="#i-shield"/></svg>Processed on your device, nothing is uploaded</span>
+      <button class="btn-ghost btn-sm" id="loader-cancel" type="button">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <!-- Hidden fallback file input -->
 <input type="file" id="folder-input" webkitdirectory multiple accept="">
 
@@ -374,6 +396,7 @@
 <script src="js/detail.js"></script>
 <script src="js/sidebar.js"></script>
 <script src="js/history.js"></script>
+<script src="js/loadui.js"></script>
 <script src="js/loader.js"></script>
 <script src="js/feedback.js"></script>
 <script src="js/app.js"></script>

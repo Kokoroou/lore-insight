@@ -42,6 +42,11 @@ Folder picker / drop
       (data/ first, www/data/ for MV), skipping img/ audio/ movies/…; returns lazy
       file-likes for data/*.json only (FS_HANDLE / FS_ENTRY adapters; FS_ENTRY loops
       readEntries(), which returns at most ~100 entries per call)
+  → runLoad() [loader.js] drives the Loader overlay [loadui.js, css/loader.css]: steps
+      detect → read → map, progress bar, Cancel. The new game is built on the side and
+      only replaces the open one at commit (after the 4 small files are read), so Cancel
+      or an error before that keeps the game on screen; after commit the button says
+      Hide and the maps keep loading in the background. Errors show in the overlay.
   → loadFolder() [loader.js] (<input webkitdirectory> calls it with its File list)
       → parse MapInfos.json  → S.mapInfos  (tree metadata)
       → parse Actors.json    → S.actors[]  (\N[n] resolution)
