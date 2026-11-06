@@ -6,7 +6,11 @@ Drag the game's folder (or its `data/` folder) into the page. MakerLens Events p
 
 **Private and read-only.** No server, no uploads, no third-party hosts, and your game files are never modified.
 
-Part of the **MakerLens** family: use [MakerLens Assets](https://makerlens.kokoroou.workers.dev/assets/) to browse the same game's images and audio.
+**Try it:** <https://makerlens.kokoroou.workers.dev/events/>
+
+**Who it's for:** guide and wiki writers, dataminers and speedrunners looking for what unlocks an ending or a hidden route; translators who need to know which branch a line belongs to; developers and writers who want a bird's-eye view of tangled events. Free, no account, no ads. Not an editor: to change events, use the RPG Maker editor.
+
+Part of the **[MakerLens](https://makerlens.kokoroou.workers.dev/)** family: use [MakerLens Assets](https://makerlens.kokoroou.workers.dev/assets/) to browse the same game's images and audio.
 
 > Formerly named LoreInsight. Renamed so the event viewer and the asset viewer share one brand and one audience.
 
@@ -56,7 +60,7 @@ Part of the **MakerLens** family: use [MakerLens Assets](https://makerlens.kokor
 ## Project Structure
 
 ```
-lore-insight/            # repository name kept; product name is MakerLens Events
+rpgmaker-events-viewer/  # formerly lore-insight; product name is MakerLens Events
   index.html             # App shell (CSP: self only)
   css/                   # Styles split by area; tokens.css holds the MakerLens colours
   js/

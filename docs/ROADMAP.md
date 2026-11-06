@@ -2,7 +2,11 @@
 
 This roadmap turns the LoreInsight prototype into **MakerLens Events**, the event-flow half of the
 MakerLens family (MakerLens Assets views a game's images and audio:
-<https://kokoroou.github.io/rpgmaker-assets-viewer/>). It comes from the idea evaluation of 2026-11-05.
+<https://makerlens.kokoroou.workers.dev/assets/>). It comes from the idea evaluation of 2026-11-05.
+
+**Verdict:** keep going only as part of MakerLens (3★ inside the family, 2★ as a standalone LoreInsight): same
+audience and gesture, running cost 0, but a narrower market than Assets (≈ 40k people ever needing to read
+event flow vs ≈ 100k for assets), so a separate brand would split already small traffic. Free, no paid tier.
 
 ## Why rebrand instead of growing LoreInsight alone
 
@@ -24,7 +28,11 @@ MakerLens family (MakerLens Assets views a game's images and audio:
 > in-editor plugins, it needs no plugin or project, reads released games, and files never leave the machine.
 
 - **Primary audience:** guide and wiki writers, dataminers, speedrunners (hidden routes, True Ending conditions).
-- **Secondary:** developers, writers and translators who want a bird's-eye view of tangled events.
+  The key feature for them is the condition (switch / variable names), not the dialogue.
+- **Secondary:** translators who need to know which branch a line belongs to (Translator++ already handles
+  the text itself), and developers or writers who want a bird's-eye view of tangled events (they already have
+  the editor and Visual Event Editor; only automatic checks such as dead ends would win them over).
+- **Bridge:** people who just opened the game in MakerLens Assets; one more drag and drop costs nothing.
 - **Not for:** editing or repackaging games (use the RPG Maker editor or Visual Event Editor).
 
 Ground rules, shared with MakerLens Assets:
@@ -55,9 +63,9 @@ Goal: the product is public, findable and measurable, and both MakerLens sites p
 
 | # | Item | Notes | Effort |
 |---|------|-------|--------|
-| 1.1 | **Publish on GitHub Pages** | Settings → Pages. Decide the URL first (see 1.2), because SEO and links depend on it | S |
-| 1.2 | **Decide the repository name** | Keep `lore-insight`, or rename to `makerlens-events` (GitHub redirects the repo, not the Pages URL). Renaming before launch avoids a broken public URL later | S |
-| 1.3 | **Cross-link from MakerLens Assets** | MakerLens roadmap item 17: a "View events" link in the header/About of MakerLens Assets. Link only, no data shared between sites | S |
+| 1.1 | ~~**Publish**~~ | Done: <https://makerlens.kokoroou.workers.dev/events/>, deployed by `Kokoroou/makerlens` (one Cloudflare Worker for the family) | S |
+| 1.2 | ~~**Decide the repository name**~~ | Done: renamed to `rpgmaker-events-viewer` (matches `rpgmaker-assets-viewer`) | S |
+| 1.3 | ~~**Cross-link from MakerLens Assets**~~ | Done: MakerLens Assets roadmap item 17, a link in its About dialog; Events links back from the setup screen and About. Link only, no data shared between sites | S |
 | 1.4 | ~~**Anonymous page counter (GoatCounter)**~~ | Done: `js/analytics.js`, page views and referrer only, CSP `img-src` allows the counter; documented in the shared MakerLens privacy page (`/assets/privacy.html#analytics`) | S |
 | 1.5 | **Feedback and star rating** | New `makerlens-events` project in the feedback inbox (Kokoroou/feedbacks `src/projects.js`); prompt only after the second game is opened, like MakerLens | S–M |
 | 1.6 | **SEO basics** | `canonical`, `og:url`, `og:image` (MakerLens style), `sitemap.xml`, `llms.txt`, favicon with the shared mark | S |
