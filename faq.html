@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- browser UI colour = --bg of tokens.css (light / dark) -->
+<meta name="theme-color" content="#f8fafc" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0b1120" media="(prefers-color-scheme: dark)">
+<!-- Static page: scripts and styles from this site only, plus the anonymous GoatCounter pixel
+     (js/analytics.js). No feedback form here, so connect-src is 'none'. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' https://kokoroou.goatcounter.com; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>RPG Maker Event Viewer FAQ: MV &amp; MZ Events | MakerLens</title>
+<meta name="description" content="How to view RPG Maker MV and MZ events without the editor: which folder to open, what the flow graph shows, finding what unlocks an ending, switch names, privacy.">
+<link rel="canonical" href="https://makerlens.kokoroou.workers.dev/events/faq.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="MakerLens">
+<meta property="og:url" content="https://makerlens.kokoroou.workers.dev/events/faq.html">
+<meta property="og:title" content="RPG Maker Event Viewer FAQ — MakerLens Events">
+<meta property="og:description" content="View RPG Maker MV and MZ events as a flow graph without the editor: what to open, what the graph shows and how to find what unlocks an ending.">
+<meta property="og:image" content="https://makerlens.kokoroou.workers.dev/events/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="MakerLens Events — RPG Maker events as a flow graph, in your browser">
+<meta name="twitter:card" content="summary_large_image">
+<!-- FAQPage: questions and answers must match the visible <details> below
+     (scripts/check-site.mjs checks it). Generated from one list, keep them in sync. -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "@id": "https://makerlens.kokoroou.workers.dev/events/faq.html#faq",
+  "isPartOf": {
+    "@id": "https://makerlens.kokoroou.workers.dev/#website"
+  },
+  "about": {
+    "@id": "https://makerlens.kokoroou.workers.dev/events/#app"
+  },
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "How do I view the events of an RPG Maker MV or MZ game?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Open MakerLens Events, press Select Game Folder and pick the game's folder, or drop the folder anywhere on the page. Pick a map in the sidebar, then an event: its commands appear as a flow graph. Click a node to read its full text in the side panel, and use the page tabs for events with more than one page."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Which folder do I select?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The game's root folder works, and so does its data/ folder on its own. MV games keep it in www/data/, MZ games in data/; MakerLens Events finds either. It reads MapInfos.json (the map tree), every Map###.json, CommonEvents.json, System.json (switch and variable names) and Actors.json. Images and audio are not needed."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Do I need the RPG Maker editor, the project file or a plugin?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. It reads a released game as it is shipped, so you don't need to own RPG Maker, open the project or start a playtest. That is the difference from node editors and debugger plugins, which run inside the game or the editor. Nothing is installed into the game, and the game is never changed."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Which RPG Maker versions are supported?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "RPG Maker MV and MZ, whose event data is plain JSON. XP, VX and VX Ace store events in Ruby files (.rxdata, .rvdata, .rvdata2) and are not supported yet, nor are RPG Maker 2000 / 2003. For the images and audio of XP, VX and VX Ace games, use MakerLens Assets."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Why does it say “No RPG Maker data folder found”?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "It found no data/ folder and no Map###.json file in what you selected. Select the game's root folder (the one with Game.exe) or its data/ folder, not img/ or audio/. Some released games pack all their files into the .exe or encrypt data/ with a plugin; MakerLens Events cannot read those."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What does the flow graph show?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Five kinds of node: dialogue (Show Text, with the speaker name in MZ), choices (Show Choices, one branch per option), conditions (Conditional Branch, with its Else branch), labels, and jumps to a label, drawn as dashed arrows. Other commands, such as Control Switches, Transfer Player, a Common Event call or a script, are not drawn yet."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I find what unlocks an ending or a hidden route?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Open the event that starts the ending and follow its condition nodes: each one names the switch, variable or actor it tests, such as If [Switch: Met the witch]. Then look for the event that leads into that branch. Note that the conditions on an event page's own settings (the editor's page conditions) are not shown yet; switch between the page tabs to compare pages."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Are switch, variable and actor names shown?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Names come from the game's System.json and Actors.json, so a condition reads If [Variable: Gold found] rather than a bare number. In dialogue, the \\N[n] and \\V[n] text codes are replaced with the actor name and the variable name. A switch without a name shows its number instead, such as If [Switch #12]."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I see common events?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Common events are listed below the maps in the sidebar and open as graphs the same way. Maps keep the tree and folder order of the editor, from MapInfos.json."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Which branch does a line of dialogue belong to?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Find the line's dialogue node and follow the arrows back up: the choice option or the If / Else branch above it is the branch. Click any node to read the full text in the side panel. This is handy for translators who need to know when a line is said."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I edit events or export them?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. MakerLens Events is read-only: it never writes to the game files and has no export. To change events, use the RPG Maker editor. You can drag nodes to tidy the graph (with undo and redo), but that only changes what you see."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Are my game files uploaded anywhere?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. Files are read by your browser and never leave your device. The page's Content-Security-Policy blocks requests to any server except an anonymous page-view counter, which receives only the page address and referrer, and the optional feedback form, which sends only the rating and comment you choose to send. Details: Privacy & analytics."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Do I need to install anything? Does it work offline?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No installation and no account. It works best in Chrome or Edge; Firefox works too, through its folder picker. All libraries are served from this site, so once the page has loaded it works without an internet connection. The source code is on GitHub (MIT license)."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is it legal to look at a game's events?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "MakerLens Events only reads files that are already on your computer and changes nothing. It is meant for your own games, or games you have permission to study, for example to write a guide or a translation. Reusing a game's story or text elsewhere may need the rights holder's permission, so check the game's terms."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I get a game's images and music?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Use MakerLens Assets, the other MakerLens tool. It opens the same game folder and previews and downloads its encrypted images and audio (.rpgmvp, .png_, .ogg_ and more), also in your browser."
+      }
+    }
+  ]
+}
+</script>
+<link rel="stylesheet" href="css/faq.css">
+<script src="js/theme-init.js"></script>
+</head>
+<body>
+<main>
+  <a class="back" href="./">← Back to MakerLens Events</a>
+  <h1>RPG Maker event viewer FAQ</h1>
+  <p class="intro">MakerLens Events shows the events of an RPG Maker MV or MZ game as a flow graph, right in your browser: dialogue, choices, conditions, labels and jumps. It works on released games, with no editor and no plugin. <strong>Your files never leave your device.</strong></p>
+
+  <h2 class="group">Opening a game</h2>
+  <div class="faq">
+    <details open>
+      <summary><h3>How do I view the events of an RPG Maker MV or MZ game?</h3></summary>
+      <p>Open <a href="./">MakerLens Events</a>, press <strong>Select Game Folder</strong> and pick the game's folder, or drop the folder anywhere on the page. Pick a map in the sidebar, then an event: its commands appear as a flow graph. Click a node to read its full text in the side panel, and use the page tabs for events with more than one page.</p>
+    </details>
+    <details>
+      <summary><h3>Which folder do I select?</h3></summary>
+      <p>The game's root folder works, and so does its <code>data/</code> folder on its own. MV games keep it in <code>www/data/</code>, MZ games in <code>data/</code>; MakerLens Events finds either. It reads <code>MapInfos.json</code> (the map tree), every <code>Map###.json</code>, <code>CommonEvents.json</code>, <code>System.json</code> (switch and variable names) and <code>Actors.json</code>. Images and audio are not needed.</p>
+    </details>
+    <details>
+      <summary><h3>Do I need the RPG Maker editor, the project file or a plugin?</h3></summary>
+      <p>No. It reads a released game as it is shipped, so you don't need to own RPG Maker, open the project or start a playtest. That is the difference from node editors and debugger plugins, which run inside the game or the editor. Nothing is installed into the game, and the game is never changed.</p>
+    </details>
+    <details>
+      <summary><h3>Which RPG Maker versions are supported?</h3></summary>
+      <p>RPG Maker MV and MZ, whose event data is plain JSON. XP, VX and VX Ace store events in Ruby files (<code>.rxdata</code>, <code>.rvdata</code>, <code>.rvdata2</code>) and are not supported yet, nor are RPG Maker 2000 / 2003. For the images and audio of XP, VX and VX Ace games, use <a href="../assets/">MakerLens Assets</a>.</p>
+    </details>
+    <details>
+      <summary><h3>Why does it say “No RPG Maker data folder found”?</h3></summary>
+      <p>It found no <code>data/</code> folder and no <code>Map###.json</code> file in what you selected. Select the game's root folder (the one with <code>Game.exe</code>) or its <code>data/</code> folder, not <code>img/</code> or <code>audio/</code>. Some released games pack all their files into the <code>.exe</code> or encrypt <code>data/</code> with a plugin; MakerLens Events cannot read those.</p>
+    </details>
+  </div>
+  <h2 class="group">Reading the graph</h2>
+  <div class="faq">
+    <details>
+      <summary><h3>What does the flow graph show?</h3></summary>
+      <p>Five kinds of node: <strong>dialogue</strong> (Show Text, with the speaker name in MZ), <strong>choices</strong> (Show Choices, one branch per option), <strong>conditions</strong> (Conditional Branch, with its Else branch), <strong>labels</strong>, and <strong>jumps</strong> to a label, drawn as dashed arrows. Other commands, such as Control Switches, Transfer Player, a Common Event call or a script, are not drawn yet.</p>
+    </details>
+    <details>
+      <summary><h3>How do I find what unlocks an ending or a hidden route?</h3></summary>
+      <p>Open the event that starts the ending and follow its condition nodes: each one names the switch, variable or actor it tests, such as <code>If [Switch: Met the witch]</code>. Then look for the event that leads into that branch. Note that the conditions on an event page's own settings (the editor's page conditions) are not shown yet; switch between the page tabs to compare pages.</p>
+    </details>
+    <details>
+      <summary><h3>Are switch, variable and actor names shown?</h3></summary>
+      <p>Yes. Names come from the game's <code>System.json</code> and <code>Actors.json</code>, so a condition reads <code>If [Variable: Gold found]</code> rather than a bare number. In dialogue, the <code>\N[n]</code> and <code>\V[n]</code> text codes are replaced with the actor name and the variable name. A switch without a name shows its number instead, such as <code>If [Switch #12]</code>.</p>
+    </details>
+    <details>
+      <summary><h3>Can I see common events?</h3></summary>
+      <p>Yes. Common events are listed below the maps in the sidebar and open as graphs the same way. Maps keep the tree and folder order of the editor, from <code>MapInfos.json</code>.</p>
+    </details>
+    <details>
+      <summary><h3>Which branch does a line of dialogue belong to?</h3></summary>
+      <p>Find the line's dialogue node and follow the arrows back up: the choice option or the If / Else branch above it is the branch. Click any node to read the full text in the side panel. This is handy for translators who need to know when a line is said.</p>
+    </details>
+  </div>
+  <h2 class="group">Privacy, editing and legal</h2>
+  <div class="faq">
+    <details>
+      <summary><h3>Can I edit events or export them?</h3></summary>
+      <p>No. MakerLens Events is read-only: it never writes to the game files and has no export. To change events, use the RPG Maker editor. You can drag nodes to tidy the graph (with undo and redo), but that only changes what you see.</p>
+    </details>
+    <details>
+      <summary><h3>Are my game files uploaded anywhere?</h3></summary>
+      <p>No. Files are read by your browser and never leave your device. The page's Content-Security-Policy blocks requests to any server except an anonymous page-view counter, which receives only the page address and referrer, and the optional feedback form, which sends only the rating and comment you choose to send. Details: <a href="../assets/privacy.html">Privacy &amp; analytics</a>.</p>
+    </details>
+    <details>
+      <summary><h3>Do I need to install anything? Does it work offline?</h3></summary>
+      <p>No installation and no account. It works best in Chrome or Edge; Firefox works too, through its folder picker. All libraries are served from this site, so once the page has loaded it works without an internet connection. The <a href="https://github.com/Kokoroou/rpgmaker-events-viewer">source code</a> is on GitHub (MIT license).</p>
+    </details>
+    <details>
+      <summary><h3>Is it legal to look at a game's events?</h3></summary>
+      <p>MakerLens Events only reads files that are already on your computer and changes nothing. It is meant for your own games, or games you have permission to study, for example to write a guide or a translation. Reusing a game's story or text elsewhere may need the rights holder's permission, so check the game's terms.</p>
+    </details>
+    <details>
+      <summary><h3>How do I get a game's images and music?</h3></summary>
+      <p>Use <a href="../assets/">MakerLens Assets</a>, the other MakerLens tool. It opens the same game folder and previews and downloads its encrypted images and audio (<code>.rpgmvp</code>, <code>.png_</code>, <code>.ogg_</code> and more), also in your browser.</p>
+    </details>
+  </div>
+
+  <a class="cta" href="./">Open MakerLens Events</a>
+  <p class="more">More from MakerLens: <a href="../assets/">extract a game's images and audio</a> · <a href="../assets/faq.html">MakerLens Assets FAQ</a> · <a href="../">all tools</a></p>
+</main>
+<script src="js/analytics.js"></script>
+</body>
+</html>

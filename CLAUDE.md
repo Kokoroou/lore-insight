@@ -30,7 +30,7 @@ Run both before pushing. Tests load `js/*.js` into a `node:vm` context (`tests/h
 
 ## Publishing
 
-Public URL: `https://makerlens.kokoroou.workers.dev/events/` — one Cloudflare Worker serves the whole MakerLens family; the `Kokoroou/makerlens` repo builds it and runs `scripts/assemble-site.sh` from this repo into `/events/`. A new top-level file the site serves must be added to that script. `.github/workflows/notify-makerlens.yml` asks `Kokoroou/makerlens` to redeploy after each push to `main` (secret `MAKERLENS_DISPATCH_TOKEN`). The repo was renamed from `lore-insight` to `rpgmaker-events-viewer`. All paths in the page must stay relative so the tool works under a subpath.
+Public URL: `https://makerlens.kokoroou.workers.dev/events/` — one Cloudflare Worker serves the whole MakerLens family; the `Kokoroou/makerlens` repo builds it and runs `scripts/assemble-site.sh` from this repo into `/events/`. A new top-level file the site serves must be added to that script. `.github/workflows/notify-makerlens.yml` asks `Kokoroou/makerlens` to redeploy after each push to `main` (secret `MAKERLENS_DISPATCH_TOKEN`). The repo was renamed from `lore-insight` to `rpgmaker-events-viewer`. All paths in the page must stay relative so the tool works under a subpath. `faq.html` is a static FAQ page (own `css/faq.css`, no app scripts): keep long explanations there, and keep its `FAQPage` JSON-LD identical to the visible questions and answers (`scripts/check-site.mjs` compares them).
 
 ## Architecture
 

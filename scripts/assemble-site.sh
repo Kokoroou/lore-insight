@@ -7,4 +7,4 @@ set -euo pipefail
 out=${1:?usage: scripts/assemble-site.sh <out-dir>}
 cd "$(dirname "$0")/.."
 mkdir -p "$out"
-cp -R index.html og-image.png css js vendor LICENSE README.md "$out"/
+cp -R index.html faq.html og-image.png css js vendor LICENSE README.md "$out"/
