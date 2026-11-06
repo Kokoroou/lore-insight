@@ -10,11 +10,22 @@ const file = (path, json) => ({
 });
 
 function setup() {
-  const calls = { status: [], sidebar: 0, selected: [], hidden: false };
+  const calls = { status: [], sidebar: 0, selected: [], hidden: false, loader: [], failed: [], cancel: false, committed: 0, closed: 0 };
   const cls = () => ({ remove() { calls.hidden = false; }, add() { calls.hidden = true; } });
+  // Stand-in for loadui.js's Loader: records the steps instead of touching the DOM.
+  const Loader = {
+    active: false,
+    open(o) { Loader.active = true; calls.cancel = false; calls.loader.push(['open', o.name]); },
+    step(id, state) { calls.loader.push([id, state]); },
+    detail() {}, progress() {},
+    commit() { calls.committed++; },
+    fail(m) { calls.failed.push(m); },
+    close() { Loader.active = false; calls.closed++; },
+    check() { if (calls.cancel) throw new DOMException('cancelled', 'AbortError'); },
+  };
   const get = load(['constants.js', 'parser.js', 'state.js', 'loader.js'], {
     EL: { scanStatus: {}, sidebar: { classList: cls() }, sbResizer: { classList: cls() } },
-    setTimeout, clearTimeout,
+    setTimeout, clearTimeout, DOMException, Loader,
   });
   // UI functions from other files, replaced with recorders.
   get('globalThis').__calls = calls;
@@ -53,6 +64,11 @@ test('loads a game folder: map tree, names, common events and maps with events',
   assert.equal(S.maps.get(1).events[0].pages[0].list.length, 3);
   assert.ok(calls.sidebar >= 1);
   assert.deepEqual(calls.selected, [1]);           // the first map with events opens by itself
+  assert.equal(calls.committed, 1);
+  assert.deepEqual(calls.loader.filter(l => l[0] !== 'open').map(l => l.join(':')),
+    ['detect:active', 'detect:done', 'read:active', 'read:done', 'map:active', 'map:done']);
+  assert.equal(calls.closed, 1);                   // the overlay closes once the first map is up
+  assert.equal(calls.failed.length, 0);
   assert.equal(S.mapFiles.size, 0);                // every map was read in the background
   assert.equal(calls.status.at(-1)[0], 'ok');
   assert.match(calls.status.at(-1)[1], /2 maps with 2 events and 1 common events/);
@@ -73,6 +89,7 @@ test('a folder without RPG Maker data reports an error and loads nothing', async
   await get('loadFolder')([file('Photos/cat.png', '')]);
   assert.equal(calls.status.at(-1)[0], 'err');
   assert.match(calls.status.at(-1)[1], /No RPG Maker data folder/);
+  assert.match(calls.failed[0], /No RPG Maker data folder/);   // shown in the overlay too
   assert.equal(calls.sidebar, 0);
 });
 
@@ -158,3 +175,49 @@ test('FS_ENTRY keeps calling readEntries until it returns an empty batch (more t
 });
 
 function get0(name) { return setup().get(name); }
+
+test('the overlay names the game folder', async () => {
+  const { get, calls } = setup();
+  await get('loadFolder')(game('MyGame/'));
+  assert.deepEqual(calls.loader[0], ['open', 'MyGame']);
+});
+
+test('Cancel before the commit keeps the game that was open', async () => {
+  const { get, calls } = setup();
+  await get('loadFolder')(game('First/'));
+  await get('S.bgDone');
+  const before = plain([...get('S.maps.keys()')]);
+  calls.sidebar = 0;
+  const second = game('Second/').map(f => ({ ...f, text: async () => { calls.cancel = true; return f.text(); } }));
+  await get('loadFolder')(second);   // Cancel is pressed while the small files are read
+  assert.deepEqual(plain([...get('S.maps.keys()')]), before);
+  assert.equal(get('S.mapInfos[1].name'), 'Town');
+  assert.equal(calls.sidebar, 0);
+  assert.equal(calls.closed, 2);     // overlay closed, no error shown
+  assert.equal(calls.failed.length, 0);
+  // The open game still works: its maps load on demand.
+  assert.equal((await get('ensureMap')(2)).events[0].name, 'Keeper');
+});
+
+test('an error before the commit keeps the game that was open', async () => {
+  const { get, calls } = setup();
+  await get('loadFolder')(game('First/'));
+  await get('S.bgDone');
+  await get('loadFolder')([file('Photos/cat.png', '')]);
+  assert.equal(get('S.maps.size'), 2);
+  assert.equal(calls.failed.length, 1);
+});
+
+test('a load that is replaced by a newer one never commits', async () => {
+  const { get } = setup();
+  let release;
+  const gate = new Promise(r => { release = r; });
+  const slow = [file('A/data/Map001.json', { events: [null, { id: 1, name: 'A', pages: [] }] }),
+                { ...file('A/data/MapInfos.json', []), text: async () => { await gate; return '[]'; } }];
+  const first = get('loadFolder')(slow);
+  const second = get('loadFolder')([file('B/data/Map002.json', { events: [null, { id: 1, name: 'B', pages: [] }] })]);
+  release();
+  await Promise.all([first, second]);
+  await get('S.bgDone');
+  assert.deepEqual(plain([...get('S.maps.keys()')]), [2]);
+});

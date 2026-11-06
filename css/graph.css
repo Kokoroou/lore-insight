@@ -82,3 +82,17 @@
 .ev-card:hover { border-color: var(--a40); transform: translateY(-2px); box-shadow: var(--shadow-lg); }
 .ev-card-name { font-size: 14px; font-weight: 600; color: var(--t); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ev-card-meta { font-size: 12px; color: var(--t3); margin-top: 2px; font-variant-numeric: tabular-nums; }
+
+/* "Laying out N nodes…" while a big event page is being drawn */
+.layout-notice {
+  position: absolute; top: 16px; left: 50%; transform: translateX(-50%); z-index: 4;
+  padding: 8px 14px;
+  border-radius: 99px;
+  border: 1px solid var(--bd);
+  background: var(--s1);
+  box-shadow: var(--shadow-lg);
+  color: var(--t2);
+  font-size: 13px;
+  pointer-events: none;
+}
+.layout-notice[hidden] { display: none; }

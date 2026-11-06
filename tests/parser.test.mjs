@@ -229,3 +229,13 @@ test('parseCommonEvents drops empty slots and names unnamed events', () => {
 test('VISIBLE_CODES lists exactly the commands the parser draws', () => {
   assert.deepEqual([...VISIBLE_CODES].sort((a, b) => a - b), [101, 102, 111, 118, 119]);
 });
+
+test('layoutPlan: big pages defer the layout, huge ones also use the cheaper ranking', () => {
+  const get = load(['constants.js']);
+  const plan = get('layoutPlan');
+  assert.deepEqual(plain(plan(10)),   { defer: false, ranker: 'network-simplex' });
+  assert.deepEqual(plain(plan(119)),  { defer: false, ranker: 'network-simplex' });
+  assert.deepEqual(plain(plan(120)),  { defer: true,  ranker: 'network-simplex' });
+  assert.deepEqual(plain(plan(399)),  { defer: true,  ranker: 'network-simplex' });
+  assert.deepEqual(plain(plan(400)),  { defer: true,  ranker: 'longest-path' });
+});

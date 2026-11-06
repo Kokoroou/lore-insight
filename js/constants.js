@@ -39,3 +39,17 @@ const NODE_COLORS_LIGHT = {
   label:     { bg: '#ecfdf5', border: '#059669', text: '#064e3b' },
   jump:      { bg: '#fff7ed', border: '#ea580c', text: '#7c2d12' },
 };
+
+// Big event pages (graph.js): from LAYOUT_NOTICE_NODES nodes the layout waits one frame so a
+// "Laying out…" notice can paint first (dagre runs synchronously and freezes the page);
+// from LAYOUT_FAST_NODES it also uses dagre's cheaper ranking, which is quicker on slow
+// machines at the cost of slightly longer edges.
+const LAYOUT_NOTICE_NODES = 120;
+const LAYOUT_FAST_NODES   = 400;
+
+function layoutPlan(count) {
+  return {
+    defer:  count >= LAYOUT_NOTICE_NODES,
+    ranker: count >= LAYOUT_FAST_NODES ? 'longest-path' : 'network-simplex',
+  };
+}

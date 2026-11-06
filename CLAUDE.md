@@ -42,6 +42,11 @@ Folder picker / drop
       (data/ first, www/data/ for MV), skipping img/ audio/ movies/…; returns lazy
       file-likes for data/*.json only (FS_HANDLE / FS_ENTRY adapters; FS_ENTRY loops
       readEntries(), which returns at most ~100 entries per call)
+  → runLoad() [loader.js] drives the Loader overlay [loadui.js, css/loader.css]: steps
+      detect → read → map, progress bar, Cancel. The new game is built on the side and
+      only replaces the open one at commit (after the 4 small files are read), so Cancel
+      or an error before that keeps the game on screen; after commit the button says
+      Hide and the maps keep loading in the background. Errors show in the overlay.
   → loadFolder() [loader.js] (<input webkitdirectory> calls it with its File list)
       → parse MapInfos.json  → S.mapInfos  (tree metadata)
       → parse Actors.json    → S.actors[]  (\N[n] resolution)
@@ -89,6 +94,7 @@ The tool never edits or exports game files. In-place dialogue editing and the ma
 
 ### Cytoscape integration
 
+- Big pages (`layoutPlan()` in constants.js: 120+ nodes) show a "Laying out N nodes…" notice (`#layout-notice`) and wait one frame before the synchronous dagre layout so the notice can paint; 400+ nodes also use dagre's `longest-path` ranker. `renderSeq`/`cancelRender()` drop a pending render when the user moves on.
 - `initCy()` creates the instance once; subsequent renders call `cy.elements().remove()` then `cy.add(elements)` and re-run the dagre layout
 - `cyStyle()` is called on every render and theme change; it returns the full style array including per-node-type `:selected` rules that produce a colored neon underlay glow
 - Node `glowColor` is stored as element data so the underlay color matches each node type

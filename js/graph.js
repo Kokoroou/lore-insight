@@ -136,10 +136,48 @@ function nodeTypeStyle(type, colors, shape) {
 }
 
 /* ── Render graph ────────────────────────────────────── */
+let renderSeq = 0;   // a newer render (or cancelRender) makes a pending one stop
+
+function showLayoutNotice(text) {
+  const el = document.getElementById('layout-notice');
+  if (!el) return;
+  el.textContent = text;
+  el.hidden = false;
+}
+function hideLayoutNotice() {
+  const el = document.getElementById('layout-notice');
+  if (el) el.hidden = true;
+}
+
+// Drops a render that is still waiting for its layout (the page went empty or changed).
+function cancelRender() {
+  renderSeq++;
+  hideLayoutNotice();
+}
+
 function renderGraph(nodes, edges) {
   if (!cy) initCy();
+  const seq = ++renderSeq;
+  hideLayoutNotice();   // a notice left by an older, superseded render
   S.currentNodes = nodes;
 
+  const emptyNotice = document.getElementById('empty-page-notice');
+  if (emptyNotice) emptyNotice.hidden = true;
+
+  const plan = layoutPlan(nodes.length);
+  cy.elements().remove();
+  if (!plan.defer) { drawGraph(nodes, edges, plan); return; }
+
+  // Big page: show the notice, let the browser paint it, then lay out.
+  showLayoutNotice(`Laying out ${nodes.length} nodes…`);
+  requestAnimationFrame(() => setTimeout(() => {
+    if (seq !== renderSeq) return;   // the user already moved on
+    drawGraph(nodes, edges, plan);
+    hideLayoutNotice();
+  }, 0));
+}
+
+function drawGraph(nodes, edges, plan) {
   const elements = [];
   for (const n of nodes) {
     elements.push({ data: {
@@ -155,25 +193,22 @@ function renderGraph(nodes, edges) {
     elements.push({ data: { id: eid, source: e.source, target: e.target, label: e.label || '', isJump: e.isJump || false } });
   }
 
-  const emptyNotice = document.getElementById('empty-page-notice');
-  if (emptyNotice) emptyNotice.hidden = true;
-
-  cy.elements().remove();
-  cy.add(elements);
+  cy.batch(() => { cy.add(elements); });
   cy.style(cyStyle());
 
-  const layout = cy.layout({
+  cy.layout({
     name: 'dagre',
     rankDir: 'TB',
     nodeSep: 40,
     rankSep: 60,
     edgeSep: 10,
     padding: 32,
+    ranker: plan.ranker,
     animate: false,
-  });
-  layout.run();
+  }).run();
 
-  setTimeout(() => cy.fit(undefined, 32), 50);
+  const seq = renderSeq;
+  setTimeout(() => { if (seq === renderSeq) cy.fit(undefined, 32); }, 50);
 }
 
 function nodeLabel(n) {
