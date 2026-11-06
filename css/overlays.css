@@ -1,55 +1,156 @@
-/* ── Drag overlay ────────────────────────────────────── */
+/* ── Drag & drop overlay (same as MakerLens Assets) ──── */
 #drag-overlay {
-  display: none; position: fixed; inset: 0; z-index: 500;
-  background: rgba(7,8,13,.88); backdrop-filter: blur(8px);
-  align-items: center; justify-content: center;
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  background: var(--scrim);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
 }
-#drag-overlay.active { display: flex; }
+#drag-overlay.active { display: flex; animation: fade-in .15s var(--ease); }
 #drag-inner {
-  display: flex; flex-direction: column; align-items: center; gap: 12px;
-  padding: 48px 64px; border: 2px dashed var(--a40); border-radius: 12px;
-  background: var(--a10); color: var(--t); font-size: 14px; font-weight: 600;
-  pointer-events: none; text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 48px 64px;
+  border: 2px dashed var(--a);
+  border-radius: var(--r-lg);
+  background: var(--s1);
+  box-shadow: var(--shadow-lg);
+  color: var(--t);
+  font-size: 16px;
+  font-weight: 600;
+  pointer-events: none;
+  text-align: center;
 }
+#drag-msg { font-size: 14px; font-weight: 500; color: var(--t2); }
 
 /* ── About modal ─────────────────────────────────────── */
 #about-modal {
-  display: none; position: fixed; inset: 0; z-index: 100;
-  background: rgba(0,0,0,.55); backdrop-filter: blur(6px);
-  align-items: center; justify-content: center;
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: var(--scrim);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
 }
-#about-modal.open { display: flex; }
-#about-panel {
-  background: var(--s1); border: 1px solid var(--bd2); border-radius: 8px;
-  width: 480px; max-width: calc(100vw - 32px); max-height: calc(100vh - 64px);
-  overflow-y: auto; padding: 28px; position: relative;
-}
-#about-close {
-  position: absolute; top: 14px; right: 14px;
-  color: var(--t3); font-size: 14px; width: 26px; height: 26px;
-  display: flex; align-items: center; justify-content: center;
-  border-radius: 4px; transition: background .12s, color .12s;
-}
-#about-close:hover { background: var(--s3); color: var(--t); }
-.about-logo { display: flex; align-items: center; gap: 8px; font-size: 17px; font-weight: 700; margin-bottom: 4px; }
-.about-logo span { color: var(--a); }
-.about-sub { font-size: 12px; color: var(--t2); margin-bottom: 20px; }
-.about-section { margin-top: 20px; }
-.about-section-title {
-  font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
-  color: var(--t3); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--bd);
-}
-.about-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
-.about-list li { font-size: 12px; color: var(--t2); padding-left: 16px; position: relative; line-height: 1.6; }
-.about-list li::before { content: '›'; position: absolute; left: 0; color: var(--a); }
-.about-note {
-  margin-top: 20px; font-size: 11px; color: var(--t3);
-  background: var(--s2); border: 1px solid var(--bd); border-radius: var(--r);
-  padding: 11px 13px; line-height: 1.7;
-}
-.legend { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
-.legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--t2); }
-.legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+#about-modal.open { display: flex; animation: fade-in .15s var(--ease); }
+#about-modal.open #about-panel { animation: pop-in .2s var(--ease); }
 
-/* ── Hidden inputs ───────────────────────────────────── */
-#folder-input { display: none; }
+#about-panel {
+  background: var(--s1);
+  border: 1px solid var(--bd);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-lg);
+  width: 520px;
+  max-width: 100%;
+  max-height: calc(100vh - 48px);
+  max-height: calc(100dvh - 48px);
+  overflow-y: auto;
+  padding: 28px;
+  position: relative;
+}
+
+.modal-close {
+  position: absolute;
+  top: 14px; right: 14px;
+  color: var(--t2);
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: var(--r);
+  transition: background .15s var(--ease), color .15s var(--ease);
+}
+.modal-close:hover { background: var(--s2); color: var(--t); }
+
+.about-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -.01em;
+  margin-bottom: 6px;
+}
+.about-sub { font-size: 14px; color: var(--t2); }
+
+.about-section { margin-top: 24px; }
+.about-section-title {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--t3);
+  margin-bottom: 10px;
+}
+
+.about-list {
+  list-style: none;
+  counter-reset: step;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.about-list li {
+  counter-increment: step;
+  font-size: 14px;
+  color: var(--t2);
+  padding-left: 32px;
+  position: relative;
+  line-height: 1.6;
+}
+.about-list li::before {
+  content: counter(step);
+  position: absolute; left: 0; top: 1px;
+  width: 22px; height: 22px;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: var(--a10);
+  color: var(--a);
+  font-size: 12px; font-weight: 700;
+}
+.about-list strong { color: var(--t); font-weight: 600; }
+.about-more { margin-top: 12px; font-size: 14px; color: var(--t2); }
+
+.legend { display: flex; flex-wrap: wrap; gap: 6px; }
+.legend-item {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 13px; color: var(--t2);
+  background: var(--s2); border: 1px solid var(--bd); border-radius: 99px;
+  padding: 2px 10px 2px 8px;
+}
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.dot-dialogue  { background: var(--c-dlg); }
+.dot-choice    { background: var(--c-choice); }
+.dot-condition { background: var(--c-cond); }
+.dot-label     { background: var(--c-label); }
+.dot-jump      { background: var(--c-jump); }
+
+.about-note {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.note-row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 13px;
+  color: var(--t2);
+  background: var(--s2);
+  border: 1px solid var(--bd);
+  border-radius: var(--r);
+  padding: 12px 14px;
+  line-height: 1.6;
+}
+.note-row svg { margin-top: 2px; color: var(--a); }
+.note-row strong { color: var(--t); font-weight: 600; }

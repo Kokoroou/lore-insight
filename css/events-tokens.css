@@ -1,0 +1,33 @@
+/* ── Events-only tokens ──────────────────────────────────
+   css/tokens.css is a verbatim copy of MakerLens Assets' css/tokens.css (the
+   family's shared design system; the makerlens build checks they stay equal).
+   Do not edit it here: change it in rpgmaker-assets-viewer and copy it over.
+   What only this tool needs lives in this file. */
+
+:root {
+  --dw: 300px;          /* detail panel width */
+
+  /* node types (graph, legend, inspector badges) — light */
+  --c-dlg:    #d97706;
+  --c-choice: #2563eb;
+  --c-cond:   #7c3aed;
+  --c-label:  #059669;
+  --c-jump:   #ea580c;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --c-dlg:    #f59e0b;
+    --c-choice: #60a5fa;
+    --c-cond:   #a78bfa;
+    --c-label:  #34d399;
+    --c-jump:   #fb923c;
+  }
+}
+:root[data-theme="dark"] {
+  --c-dlg:    #f59e0b;
+  --c-choice: #60a5fa;
+  --c-cond:   #a78bfa;
+  --c-label:  #34d399;
+  --c-jump:   #fb923c;
+}

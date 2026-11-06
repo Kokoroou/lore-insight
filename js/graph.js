@@ -1,9 +1,21 @@
+/* ── Theme ───────────────────────────────────────────── */
+// Same rule as MakerLens Assets: html[data-theme] is an explicit choice,
+// otherwise the OS preference (prefers-color-scheme) decides.
+const DARK_MQ = window.matchMedia('(prefers-color-scheme: dark)');
+const systemTheme  = () => DARK_MQ.matches ? 'dark' : 'light';
+const currentTheme = () => document.documentElement.dataset.theme || systemTheme();
+
+// Design tokens from css/tokens.css (the shared MakerLens palette), so the
+// canvas uses the same colours and font as the rest of the page.
+function token(name) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
 /* ── Cytoscape instance ──────────────────────────────── */
 let cy = null;
 
 function activeNodeColors() {
-  return document.documentElement.getAttribute('data-theme') === 'light'
-    ? NODE_COLORS_LIGHT : NODE_COLORS;
+  return currentTheme() === 'light' ? NODE_COLORS_LIGHT : NODE_COLORS;
 }
 
 function initCy() {
@@ -33,8 +45,12 @@ function initCy() {
 }
 
 function cyStyle() {
-  const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
-  const bgBase = isDark ? '#07080d' : '#f4f5fb';
+  const bgBase = token('--bg');
+  const line   = token('--bd2');
+  const muted  = token('--t2');
+  const font   = token('--font');
+  const jump   = token('--c-jump');
+  const accent = token('--a');
   return [
     {
       selector: 'node',
@@ -47,8 +63,8 @@ function cyStyle() {
         'label': 'data(label)',
         'text-wrap': 'wrap',
         'text-max-width': 200,
-        'font-size': 11,
-        'font-family': "'Segoe UI Variable','Segoe UI',system-ui,sans-serif",
+        'font-size': 12,
+        'font-family': font,
         'padding': 12,
         'width': 'label',
         'height': 'label',
@@ -77,13 +93,14 @@ function cyStyle() {
       selector: 'edge',
       style: {
         'width': 1.5,
-        'line-color': isDark ? '#272944' : '#b0b2c4',
-        'target-arrow-color': isDark ? '#272944' : '#b0b2c4',
+        'line-color': line,
+        'target-arrow-color': line,
         'target-arrow-shape': 'triangle',
         'curve-style': 'bezier',
         'label': 'data(label)',
-        'font-size': 10,
-        'color': isDark ? '#686a88' : '#9698b0',
+        'font-size': 11,
+        'font-family': font,
+        'color': muted,
         'text-background-color': bgBase,
         'text-background-opacity': 0.85,
         'text-background-padding': '3px',
@@ -94,14 +111,14 @@ function cyStyle() {
       selector: 'edge[?isJump]',
       style: {
         'line-style': 'dashed',
-        'line-color': '#fb923c',
-        'target-arrow-color': '#fb923c',
+        'line-color': jump,
+        'target-arrow-color': jump,
         'line-dash-pattern': [6, 3],
       }
     },
     {
       selector: 'edge:selected',
-      style: { 'line-color': '#f59e0b', 'target-arrow-color': '#f59e0b', 'width': 2 }
+      style: { 'line-color': accent, 'target-arrow-color': accent, 'width': 2 }
     },
   ];
 }
@@ -139,7 +156,7 @@ function renderGraph(nodes, edges) {
   }
 
   const emptyNotice = document.getElementById('empty-page-notice');
-  if (emptyNotice) emptyNotice.style.display = 'none';
+  if (emptyNotice) emptyNotice.hidden = true;
 
   cy.elements().remove();
   cy.add(elements);

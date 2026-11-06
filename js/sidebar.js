@@ -4,7 +4,7 @@ function renderSidebar() {
   listEl.innerHTML = '';
 
   if (S.maps.size === 0 && S.commonEvents.length === 0) {
-    listEl.appendChild(el('div', 'sb-item', 'No data loaded'));
+    listEl.appendChild(el('div', 'detail-empty', 'No data loaded'));
     return;
   }
 
@@ -17,8 +17,8 @@ function renderSidebar() {
     listEl.appendChild(el('div', 'sb-section', 'Common Events'));
     for (const cev of S.commonEvents) {
       const item = el('div', 'sb-item' + (S.selectedMapId === 'common' && S.selectedEvId === cev.id ? ' active' : ''));
-      item.appendChild(el('span', '', '⚡'));
-      item.appendChild(el('span', '', cev.name));
+      item.appendChild(iconEl('zap'));
+      item.appendChild(el('span', 'sb-name', cev.name));
       item.addEventListener('click', () => selectCommonEvent(cev.id));
       listEl.appendChild(item);
     }
@@ -50,9 +50,9 @@ function renderMapTree(container) {
 
     if (kidsWithEvents.length > 0) {
       const folderRow = el('div', 'sb-folder');
-      folderRow.style.paddingLeft = (depth * 12 + 12) + 'px';
+      folderRow.style.paddingLeft = (depth * 12 + 8) + 'px';
       if (S.collapsedFolders.has(id)) folderRow.classList.add('collapsed');
-      const arrow = el('span', 'sb-folder-arrow', '▾');
+      const arrow = iconEl('down', 'sb-folder-arrow');
       const label = el('span', 'sb-folder-label', info.name);
       folderRow.appendChild(arrow);
       folderRow.appendChild(label);
@@ -64,14 +64,12 @@ function renderMapTree(container) {
       };
 
       if (hasMap) {
-        const cnt = el('span', 'sb-count', S.maps.get(id).events.length);
-        cnt.style.marginLeft = 'auto';
-        folderRow.appendChild(cnt);
+        folderRow.appendChild(el('span', 'sb-count', S.maps.get(id).events.length));
         folderRow.addEventListener('click', e => {
-          if (e.target === arrow || e.target === folderRow) toggleCollapse();
+          if (arrow.contains(e.target) || e.target === folderRow) toggleCollapse();
           else selectMap(id);
         });
-        if (S.selectedMapId === id) label.style.color = 'var(--a)';
+        if (S.selectedMapId === id) folderRow.classList.add('active');
       } else {
         folderRow.addEventListener('click', toggleCollapse);
       }
@@ -83,9 +81,9 @@ function renderMapTree(container) {
     } else if (hasMap) {
       const mapData = S.maps.get(id);
       const item = el('div', 'sb-item' + (S.selectedMapId === id ? ' active' : ''));
-      item.style.paddingLeft = (depth * 12 + 12) + 'px';
-      item.appendChild(el('span', '', '🗺'));
-      item.appendChild(el('span', '', info.name));
+      item.style.paddingLeft = (depth * 12 + 8) + 'px';
+      item.appendChild(iconEl('map'));
+      item.appendChild(el('span', 'sb-name', info.name));
       item.appendChild(el('span', 'sb-count', mapData.events.length));
       item.addEventListener('click', () => selectMap(id));
       parentEl.appendChild(item);
@@ -100,8 +98,8 @@ function renderMapTree(container) {
     if (!S.mapInfos[mapId]) {
       const mapData = S.maps.get(mapId);
       const item = el('div', 'sb-item' + (S.selectedMapId === mapId ? ' active' : ''));
-      item.appendChild(el('span', '', '🗺'));
-      item.appendChild(el('span', '', mapData.mapName));
+      item.appendChild(iconEl('map'));
+      item.appendChild(el('span', 'sb-name', mapData.mapName));
       item.appendChild(el('span', 'sb-count', mapData.events.length));
       item.addEventListener('click', () => selectMap(mapId));
       container.appendChild(item);
