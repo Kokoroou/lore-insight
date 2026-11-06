@@ -94,6 +94,7 @@ async function loadFolder(files) {
   const totalEvents = [...S.maps.values()].reduce((s, m) => s + m.events.length, 0);
   EL.scanStatus.textContent = `${loaded} maps · ${totalEvents} events`;
   setStatus('ok', `Loaded ${loaded} maps with ${totalEvents} events and ${S.commonEvents.length} common events.`);
+  if (typeof Feedback !== 'undefined') Feedback.noteOpen();   // may ask for a rating from the 2nd game (feedback.js)
 
   renderSidebar();
   EL.sidebar.classList.remove('hidden');
