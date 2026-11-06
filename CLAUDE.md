@@ -94,6 +94,7 @@ The tool never edits or exports game files. In-place dialogue editing and the ma
 
 ### Cytoscape integration
 
+- Big pages (`layoutPlan()` in constants.js: 120+ nodes) show a "Laying out N nodes…" notice (`#layout-notice`) and wait one frame before the synchronous dagre layout so the notice can paint; 400+ nodes also use dagre's `longest-path` ranker. `renderSeq`/`cancelRender()` drop a pending render when the user moves on.
 - `initCy()` creates the instance once; subsequent renders call `cy.elements().remove()` then `cy.add(elements)` and re-run the dagre layout
 - `cyStyle()` is called on every render and theme change; it returns the full style array including per-node-type `:selected` rules that produce a colored neon underlay glow
 - Node `glowColor` is stored as element data so the underlay color matches each node type

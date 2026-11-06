@@ -143,6 +143,7 @@ function selectPage(pi) {
 
 function renderEmptyPageNotice() {
   if (!cy) initCy();
+  cancelRender();
   cy.elements().remove();
   document.getElementById('empty-page-notice').hidden = false;
 }
