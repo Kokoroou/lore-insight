@@ -19,7 +19,7 @@ test('sends one page view with only path, referrer and the random cache-buster',
   const sent = run({ referrer: 'https://makerlens.kokoroou.workers.dev/assets/' });
   assert.equal(sent.length, 1);
   const u = sent[0];
-  assert.equal(u.origin + u.pathname, 'https://kokoroou.goatcounter.com/count');
+  assert.equal(u.origin + u.pathname, 'https://makerlens.goatcounter.com/count');
   assert.deepEqual([...u.searchParams.keys()].sort(), ['p', 'r', 'rnd']);
   assert.equal(u.searchParams.get('p'), '/events/');
   assert.equal(u.searchParams.get('r'), 'https://makerlens.kokoroou.workers.dev/assets/');

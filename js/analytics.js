@@ -12,7 +12,7 @@
 // The Content-Security-Policy in index.html allows only this host in img-src.
 (function () {
   'use strict';
-  var GC_ENDPOINT = 'https://kokoroou.goatcounter.com/count';
+  var GC_ENDPOINT = 'https://makerlens.goatcounter.com/count';
   var PUBLIC_HOST = 'makerlens.kokoroou.workers.dev';
   // Query params GoatCounter reads as traffic source / campaign. Nothing else is sent.
   var SOURCE_PARAMS = ['utm_source', 'ref', 'src', 'source', 'utm_campaign', 'campaign'];
