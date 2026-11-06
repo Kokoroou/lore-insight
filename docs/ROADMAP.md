@@ -85,7 +85,7 @@ from Phase 1 come in; stop early if the stop rule below triggers.
 | 2.3 | **Event page conditions** (switch, variable, self switch, item, actor on page 2+) shown on the page tabs | Explains why a page appears; part of every hidden-route answer | S–M |
 | 2.4 | **Transfer Player (201) and Common Event (117) as links** | Lets users follow the story across maps and common events | M |
 | 2.5 | **Global text search** (dialogue, choices, names) | Translators and wiki editors find the event behind a line | S–M |
-| 2.6 | **Parser tests with synthetic data** (`node --test`, CI like MakerLens) | Required before 2.1–2.5 grow the parser | S |
+| 2.6 | ~~**Parser tests with synthetic data**~~ (`node --test`, CI like MakerLens) | Done: `tests/` (parser, loader, analytics), `scripts/check-site.mjs`, `.github/workflows/ci.yml`. They caught choice branches after a blank choice getting the wrong label | S |
 
 ## Phase 3: merge deeper into MakerLens (only if the numbers say so)
 

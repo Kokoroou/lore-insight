@@ -78,6 +78,10 @@ rpgmaker-events-viewer/  # formerly lore-insight; product name is MakerLens Even
   docs/
     vision.md            # Product vision and positioning
     ROADMAP.md           # Repositioning as MakerLens Events: phases, gates, stop rule
+  tests/                 # node --test: parser, loader, analytics (synthetic data)
+  scripts/
+    check-site.mjs       # static checks (JS syntax, CSP, local files)
+    assemble-site.sh     # copies the public files for the MakerLens deploy
 ```
 
 ## Technical Notes
@@ -91,6 +95,16 @@ rpgmaker-events-viewer/  # formerly lore-insight; product name is MakerLens Even
 ## Browser Compatibility
 
 Requires a modern browser with ES2020+ support. Chrome 86+ or Edge 86+ recommended for the best experience (full File System Access API support). Firefox works via the `<input>` fallback.
+
+## Checks
+
+No install needed (Node 22+):
+
+```bash
+node scripts/check-site.mjs && node --test "tests/*.test.mjs"
+```
+
+CI runs both on every pull request. Tests use small synthetic event lists built in the test files; please never commit real game data.
 
 ## License
 

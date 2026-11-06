@@ -1,0 +1,44 @@
+# Project CI, from agent-toolkit's templates/.github/workflows/ci.yml. The quality gate
+# (lint → format → test, Gitleaks + Semgrep) lives in the toolkit's reusable workflow;
+# this file only passes the project's commands. Keep the name "CI": the toolkit's merge
+# gate looks for it if the agent pipeline is added later.
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    uses: kokoroou/agent-toolkit/.github/workflows/quality.yml@v0
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: read
+    with:
+      # ── no build step, no package manager: Node on ubuntu-latest is enough ──
+      setup-command: ""
+      # JS syntax, self-only CSP, no inline scripts/handlers, local files (scripts/check-site.mjs).
+      lint-command: node scripts/check-site.mjs
+      format-check-command: "" # no formatter configured
+      test-command: node --test "tests/*.test.mjs"
+      # The tests load js/*.js through node:vm, which Node's coverage does not count,
+      # so there is no meaningful number to gate on yet.
+      coverage-command: ""
+      baseline-branch: main
+      # PR titles are free-form here (no release-please); turn on with Conventional
+      # Commit titles if releases are added (templates/.github/workflows/release.yml).
+      enable-pr-title-check: false
+    # Only the secrets this workflow uses (not `secrets: inherit`).
+    secrets:
+      gitleaks_license: ${{ secrets.GITLEAKS_LICENSE }} # only for organization repos
