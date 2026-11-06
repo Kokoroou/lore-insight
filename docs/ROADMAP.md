@@ -58,7 +58,7 @@ Goal: the product is public, findable and measurable, and both MakerLens sites p
 | 1.1 | **Publish on GitHub Pages** | Settings → Pages. Decide the URL first (see 1.2), because SEO and links depend on it | S |
 | 1.2 | **Decide the repository name** | Keep `lore-insight`, or rename to `makerlens-events` (GitHub redirects the repo, not the Pages URL). Renaming before launch avoids a broken public URL later | S |
 | 1.3 | **Cross-link from MakerLens Assets** | MakerLens roadmap item 17: a "View events" link in the header/About of MakerLens Assets. Link only, no data shared between sites | S |
-| 1.4 | **Anonymous page counter (GoatCounter)** | Same setup as MakerLens: page views and referrer only. Add the counter host to the CSP and document it in a `privacy.html` | S |
+| 1.4 | ~~**Anonymous page counter (GoatCounter)**~~ | Done: `js/analytics.js`, page views and referrer only, CSP `img-src` allows the counter; documented in the shared MakerLens privacy page (`/assets/privacy.html#analytics`) | S |
 | 1.5 | **Feedback and star rating** | New `makerlens-events` project in the feedback inbox (Kokoroou/feedbacks `src/projects.js`); prompt only after the second game is opened, like MakerLens | S–M |
 | 1.6 | **SEO basics** | `canonical`, `og:url`, `og:image` (MakerLens style), `sitemap.xml`, `llms.txt`, favicon with the shared mark | S |
 | 1.7 | **`LEGAL.md` and FAQ** | Intended use (own games or games you may study), read-only, no upload, takedown policy; mirror MakerLens wording | S |
