@@ -35,8 +35,8 @@ function setup() {
 
 const game = root => [
   file(`${root}data/MapInfos.json`, [null, { name: 'Town', parentId: 0, order: 1, expanded: false }, { name: 'Inn', parentId: 1, order: 2 }]),
-  file(`${root}data/Actors.json`, [null, { name: 'Harold' }]),
-  file(`${root}data/System.json`, { switches: ['', 'Met King'], variables: ['', 'Gold'] }),
+  file(`${root}data/Actors.json`, [null, { name: 'Harold', classId: 2, equips: [1, 0, 0, 5, 0] }]),
+  file(`${root}data/System.json`, { switches: ['', 'Met King'], variables: ['', 'Gold'], partyMembers: [1] }),
   file(`${root}data/CommonEvents.json`, [null, { id: 1, name: 'Heal', list: [c(0, 0)] }]),
   file(`${root}data/Map001.json`, { events: [null, { id: 1, name: 'Guard', x: 1, y: 2, pages: [{ list: [c(101, 0, ['']), c(401, 0, ['Halt']), c(0, 0)] }] }] }),
   file(`${root}data/Map002.json`, { events: [null, { id: 1, name: 'Keeper', x: 0, y: 0, pages: [{ list: [] }] }] }),
@@ -56,6 +56,8 @@ test('loads a game folder: map tree, names, common events and maps with events',
   });
   assert.deepEqual(plain([...S.collapsedFolders]), [1]);
   assert.deepEqual(plain(S.actors), ['', 'Harold']);
+  assert.deepEqual(plain(S.actorStart), [null, { name: 'Harold', classId: 2, equips: [1, 0, 0, 5, 0] }]);
+  assert.deepEqual(plain(S.party), [1]);
   assert.deepEqual(plain(S.switches), ['', 'Met King']);
   assert.deepEqual(plain(S.variables), ['', 'Gold']);
   assert.deepEqual(plain(S.commonEvents.map(e => e.name)), ['Heal']);

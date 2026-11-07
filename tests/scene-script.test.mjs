@@ -174,3 +174,70 @@ test('sceneStats / isSceneList: pictures with dialogue make a scene', () => {
   assert.deepEqual(plain(run('findScenes()')).map(s => [s.kind, s.evId, s.page, s.name, s.where]),
     [['common', 4, 0, 'CG', 'Common'], ['map', 9, 1, 'Bed · p2', 'Room']]);
 });
+
+const ids = step => Object.keys(step.pics).sort((a, b) => a - b).map(Number);
+const names = step => ids(step).map(id => step.pics[id].name);
+
+test('pictures erased by a script or PictureVariableSetting do not stay on screen', () => {
+  const { timeline } = setup();
+  const steps = timeline([
+    pic(1, 'bg'), pic(2, 'girl'), pic(50, 'ui'), ...say(['A']),
+    c(355, 0, ['for(var i = 1; i <= 40; i++){$gameScreen.erasePicture(i)}']), pic(3, 'cg'), ...say(['B']),
+    c(355, 0, ['$gameScreen.erasePicture(3);']), c(655, 0, ["$gameScreen.showPicture(4, 'next', 0, 10, 20, 100, 100, 255, 0);"]), ...say(['C']),
+    pic(5, 'x'), pic(6, 'y'), c(356, 0, ['P_TARGET_RANGE 4 5']), c(235, 0, [1]), ...say(['D']),
+    c(356, 0, ['P_TARGET_ALL']), c(235, 0, [1]), ...say(['E']),
+  ]);
+  assert.deepEqual(steps.map(names), [['bg', 'girl', 'ui'], ['cg', 'ui'], ['next', 'ui'], ['y', 'ui'], []]);
+  assert.equal(steps[2].pics[4].x, 10);
+});
+
+test('outfit layers chosen by a script variable: one outfit, not all of them', () => {
+  const { timeline } = setup();
+  const layer = (outfit, name) => [c(111, 0, [12, `$gameVariables._data[266] == '${outfit}'`]), c(231, 1, [2, name, 0, 0, 0, 0, 100, 100, 255, 0]), c(0, 1), c(412, 0)];
+  const steps = timeline([
+    pic(1, 'body'), ...layer('NAKED', 'none'), ...layer('NORMAL', 'dress'), ...layer('SWIM', 'swimsuit'), ...say(['Hi']),
+    c(355, 0, ["$gameVariables._data[266] = 'SWIM'"]), ...layer('NAKED', 'none'), ...layer('NORMAL', 'dress'), ...layer('SWIM', 'swimsuit'), ...say(['Beach']),
+  ]);
+  assert.equal(steps[0].pics[2].name, 'none', 'an unknown value is assumed once, then kept');
+  assert.equal(steps[1].pics[2].name, 'swimsuit', 'a value set by a script is followed');
+});
+
+test('script conditions: switches, comparisons, shown pictures, && and ||', () => {
+  const { timeline } = setup();
+  const when = (script, text) => [c(111, 0, [12, script]), ...say([text], 1), c(0, 1), c(412, 0)];
+  const steps = timeline([
+    c(355, 0, ['$gameSwitches.setValue(3, true); $gameVariables.setValue(7, 12)']), pic(9, 'cg'),
+    ...when('$gameSwitches.value(3)', 'sw on'),
+    ...when('!$gameSwitches.value(3)', 'sw off'),
+    ...when('$gameVariables.value(7) >= 10 && $gameVariables.value(7) < 20', 'teen'),
+    ...when('$gameVariables.value(7) == 1 || $gameScreen.picture(9)', 'or'),
+    ...when('$gameScreen.picture(8)', 'no pic'),
+    ...when('Math.random() < 0.5', 'unreadable: true'),
+  ]);
+  assert.deepEqual(lines(steps), ['sw on', 'teen', 'or', 'unreadable: true']);
+});
+
+test('actor checks use the starting equipment, name and party, changed by the scene', () => {
+  const { run, timeline } = setup();
+  run(`S.actorStart = [null, { name: 'Harold', classId: 2, equips: [1, 0, 0, 5, 0] }]; S.party = [1];`);
+  const ifActor = (kind, operand, name) => [c(111, 0, [4, 1, kind, operand]), c(231, 1, [2, name, 0, 0, 0, 0, 100, 100, 255, 0]), c(0, 1), c(412, 0)];
+  const outfits = [...ifActor(5, 5, 'robe'), ...ifActor(5, 6, 'armor'), ...ifActor(5, 7, 'bikini')];
+  const steps = timeline([
+    ...outfits, ...say(['Start']),
+    c(319, 0, [1, 4, 7]), ...outfits, ...say(['Changed']),
+    ...ifActor(1, 'Harold', 'named'), ...say(['Name']),
+    ...ifActor(6, 3, 'poisoned'), c(129, 0, [1, 1, false]), ...ifActor(0, 0, 'in party'), ...say(['Left']),
+  ]);
+  assert.deepEqual(steps.map(s => s.pics[2] && s.pics[2].name), ['robe', 'bikini', 'named', 'named']);
+});
+
+test('PictureVariableSetting: picture numbers from variables, file names with \\V[n]', () => {
+  const { timeline } = setup();
+  const steps = timeline([
+    c(122, 0, [20, 20, 0, 0, 7]), c(122, 0, [21, 21, 0, 0, 3]),
+    c(356, 0, ['P_VARIABLE_VALID']), pic(20, 'face'), c(356, 0, ['P_VARIABLE_INVALID']),
+    c(356, 0, ['P_D_FILENAME stand_\\V[21]']), pic(1, ''), ...say(['A']),
+  ]);
+  assert.deepEqual(ids(steps[0]), [1, 7]);
+  assert.equal(steps[0].pics[1].name, 'stand_3');
+});

@@ -2,19 +2,35 @@
    Like a video preview on Google Drive: the page dims, the scene sits in the middle
    at the game's screen size (scaled to fit), the controls run along the bottom.
    Each step of the timeline (scene-script.js) is one message with the pictures and
-   music of that moment. Click / → / Space: next, ←: back, A: auto, M: mute, Esc: close.
+   music of that moment. Click / → / Space: next, ←: back, A: auto, M: mute,
+   T: typewriter text, Esc: close.
    Moving forward one step plays it like the game: its animation frames first (picture
    flips and moves, sounds on their frame), then its message. Seeking or going back
-   shows the step at once, without sound effects. A click during an animation skips it. */
+   shows the step at once, without sound effects. A click during an animation skips it.
+   Messages type themselves out at reading speed (PLAYER_WPM; T turns it off); a click
+   while typing shows the whole message, like the game. */
 const PLAYER_PREF_KEY = 'mle-player';      // { vol, muted } of this viewer (never sent)
 const PLAYER_FACE = 144;                   // face graphics: 4×2 cells of 144px
 const PLAYER_MSG_H = 180;                  // message window: 4 lines, like the game
+const PLAYER_WPM = 250;                    // average reading speed: typing and auto play
+const PLAYER_HOLD = 1200;                  // auto play: pause after a message is read (ms)
+const PLAYER_CJK = /[\u3040-\u30ff\u3400-\u9fff\uf900-\ufaff\uac00-\ud7af\uff66-\uff9f]/g;
+
+// How long a message takes to read at PLAYER_WPM: words split by spaces, and two
+// CJK characters (written without spaces) count as one word.
+function playerReadMs(text) {
+  const cjk = (text.match(PLAYER_CJK) || []).length;
+  const words = (text.replace(PLAYER_CJK, ' ').match(/\S+/g) || []).length;
+  return (words + cjk / 2) / PLAYER_WPM * 60000;
+}
 
 const Player = {
   el: null,
   steps: [], i: 0, list: null,
   auto: false, timer: 0,
   anim: null,               // { step, k, timer } while a step's animation plays
+  typing: null,             // { chars, n, start, per, raf, choices } while a message types out
+  typewriter: true,
   vol: 0.8, muted: false,
   W: SCREEN_MV.width, H: SCREEN_MV.height,
   imgs: new Map(),          // picture id → <img>
@@ -30,11 +46,18 @@ const Player = {
       main: $('pl-main'), frame: $('pl-frame'), stage: $('pl-stage'), pics: $('pl-pics'), fade: $('pl-fade'),
       msg: $('pl-msg'), namebox: $('pl-namebox'), face: $('pl-face'), text: $('pl-text'), choices: $('pl-choices'),
       seek: $('pl-seek'), count: $('pl-count'), auto: $('pl-auto'), mute: $('pl-mute'), volume: $('pl-vol'),
+      type: $('pl-type'),
     };
+    // The text is two spans: what has been typed, and the rest laid out but invisible.
+    this.el.shown = document.createElement('span');
+    this.el.rest = document.createElement('span');
+    this.el.rest.className = 'pl-rest';
+    this.el.text.append(this.el.shown, this.el.rest);
     try {
       const p = JSON.parse(localStorage.getItem(PLAYER_PREF_KEY) || '{}');
       if (typeof p.vol === 'number') this.vol = Math.max(0, Math.min(1, p.vol));
       this.muted = !!p.muted;
+      if (p.typewriter === false) this.typewriter = false;
     } catch {}
     this.el.volume.value = Math.round(this.vol * 100);
 
@@ -45,6 +68,7 @@ const Player = {
     $('pl-side-next').addEventListener('click', () => this.next());
     this.el.auto.addEventListener('click', () => this.setAuto(!this.auto));
     this.el.mute.addEventListener('click', () => this.setMuted(!this.muted));
+    this.el.type.addEventListener('click', () => this.setTypewriter(!this.typewriter));
     this.el.volume.addEventListener('input', () => {
       this.vol = this.el.volume.value / 100;
       if (this.muted && this.vol > 0) this.muted = false;
@@ -56,6 +80,7 @@ const Player = {
     document.addEventListener('keydown', e => this.onKey(e), true);
     new ResizeObserver(() => this.fit()).observe(this.el.main);
     this.applyVolume();
+    this.setTypewriter(this.typewriter);
   },
 
   // entry: { title, sub, list } — list is the command list of the event page / common event.
@@ -89,6 +114,7 @@ const Player = {
   // Silence and forget the previous scene.
   stop() {
     this.stopAnim();
+    this.stopTyping();
     this.setAuto(false);
     for (const k of ['bgm', 'bgs']) this.setLoop(k, null);
     for (const a of this.oneShots) a.pause();
@@ -127,6 +153,7 @@ const Player = {
 
   next() {
     if (this.anim) return this.endAnim();
+    if (this.typing) return this.endTyping();
     if (this.i < this.steps.length - 1) this.go(this.i + 1);
     else this.setAuto(false);
   },
@@ -147,6 +174,7 @@ const Player = {
 
   render(i, play) {
     this.stopAnim();
+    this.stopTyping();
     this.i = i;
     const step = this.steps[i];
     this.el.seek.max = Math.max(0, this.steps.length - 1);
@@ -165,7 +193,7 @@ const Player = {
       return;
     }
     this.renderPictures(step.pics);
-    this.renderMessage(step.msg, step.choices);
+    this.renderMessage(step.msg, step.choices, play);
     if (play) for (const s of step.sounds) this.playOnce(s);
     this.schedule();
   },
@@ -197,7 +225,7 @@ const Player = {
     this.anim = null;
     for (const s of a.step.sounds) if (s.at >= a.k) this.playOnce(s);
     this.renderPictures(a.step.pics);
-    this.renderMessage(a.step.msg, a.step.choices);
+    this.renderMessage(a.step.msg, a.step.choices, true);
     this.schedule();
   },
 
@@ -250,7 +278,8 @@ const Player = {
     if (w > this.W && h >= this.H * 0.9 && w <= 4096) { this.grown = true; this.setStage(w, h); }
   },
 
-  renderMessage(msg, choices) {
+  // type: the message types itself out (moving forward, with the typewriter on).
+  renderMessage(msg, choices, type) {
     const el = this.el;
     el.msg.hidden = !msg && !choices;
     if (el.msg.hidden) return;
@@ -258,7 +287,8 @@ const Player = {
       ? `pl-pos-${msg.position} pl-bg-${msg.background}${msg.scroll ? ' pl-scroll' : ''}`
       : 'pl-pos-2 pl-bg-2 pl-only-choices';
     el.msg.style.height = msg && !msg.scroll ? PLAYER_MSG_H + 'px' : '';
-    el.text.textContent = msg ? msg.text : '';
+    el.shown.textContent = msg ? msg.text : '';
+    el.rest.textContent = '';
     el.namebox.hidden = !(msg && msg.name);
     el.namebox.textContent = (msg && msg.name) || '';
 
@@ -277,7 +307,7 @@ const Player = {
       });
     }
 
-    el.choices.hidden = !choices;
+    el.choices.hidden = true;
     el.choices.innerHTML = '';
     if (choices) {
       choices.items.forEach((t, k) => {
@@ -290,6 +320,58 @@ const Player = {
         el.choices.appendChild(b);
       });
     }
+    if (type && this.typewriter && msg && !msg.scroll && msg.text.trim()) this.startTyping(msg.text, !!choices);
+    else el.choices.hidden = !choices;
+  },
+
+  /* ── Typewriter: the message appears at reading speed (PLAYER_WPM) ── */
+  startTyping(text, choices) {
+    const chars = Array.from(text);
+    this.typing = { chars, n: 0, start: performance.now(), per: playerReadMs(text) / chars.length, raf: 0, choices };
+    this.el.shown.textContent = '';
+    this.el.rest.textContent = text;
+    this.typeFrame();
+  },
+
+  typeFrame() {
+    const t = this.typing;
+    if (!t) return;
+    const n = Math.min(t.chars.length, Math.floor((performance.now() - t.start) / t.per) + 1);
+    if (n !== t.n) {
+      t.n = n;
+      this.el.shown.textContent = t.chars.slice(0, n).join('');
+      this.el.rest.textContent = t.chars.slice(n).join('');
+    }
+    if (n >= t.chars.length) return this.endTyping();
+    t.raf = requestAnimationFrame(() => this.typeFrame());
+  },
+
+  // Typed out (or a click): the whole message and its choices, then auto play goes on.
+  endTyping() {
+    const t = this.typing;
+    if (!t) return;
+    this.stopTyping();
+    this.el.shown.textContent = t.chars.join('');
+    this.el.rest.textContent = '';
+    this.el.choices.hidden = !t.choices;
+    this.schedule();
+  },
+
+  stopTyping() {
+    if (this.typing) cancelAnimationFrame(this.typing.raf);
+    this.typing = null;
+  },
+
+  setTypewriter(on) {
+    this.typewriter = on;
+    if (!on) this.endTyping();
+    this.el.type.setAttribute('aria-pressed', on ? 'true' : 'false');
+    this.el.type.title = on ? 'Typewriter text: on (T)' : 'Typewriter text: off (T)';
+    this.savePrefs();
+  },
+
+  savePrefs() {
+    try { localStorage.setItem(PLAYER_PREF_KEY, JSON.stringify({ vol: this.vol, muted: this.muted, typewriter: this.typewriter })); } catch {}
   },
 
   miss(path) {
@@ -349,10 +431,10 @@ const Player = {
     this.el.mute.setAttribute('aria-pressed', off ? 'true' : 'false');
     this.el.mute.querySelector('use').setAttribute('href', off ? '#i-mute' : '#i-volume');
     this.el.volume.value = this.muted ? 0 : Math.round(this.vol * 100);
-    try { localStorage.setItem(PLAYER_PREF_KEY, JSON.stringify({ vol: this.vol, muted: this.muted })); } catch {}
+    this.savePrefs();
   },
 
-  /* ── Auto play: each line stays long enough to read ── */
+  /* ── Auto play: each line stays long enough to read at PLAYER_WPM ── */
   setAuto(on) {
     this.auto = on;
     clearTimeout(this.timer);
@@ -366,11 +448,12 @@ const Player = {
 
   schedule() {
     clearTimeout(this.timer);
-    if (!this.auto || this.anim) return;   // endAnim() schedules again
+    if (!this.auto || this.anim || this.typing) return;   // endAnim() / endTyping() schedule again
     if (this.i >= this.steps.length - 1) { this.setAuto(false); return; }
     const step = this.steps[this.i];
-    const chars = step.msg ? step.msg.text.length : 0;
-    this.timer = setTimeout(() => this.next(), Math.min(10000, 1400 + chars * 55));
+    const typed = this.typewriter && step.msg && !step.msg.scroll;   // read while it typed
+    const read = step.msg && !typed ? playerReadMs(step.msg.text) : 0;
+    this.timer = setTimeout(() => this.next(), PLAYER_HOLD + Math.min(15000, read));
   },
 
   onKey(e) {
@@ -388,6 +471,7 @@ const Player = {
     else if (k === 'End') this.go(this.steps.length - 1);
     else if (k === 'a' || k === 'A') this.setAuto(!this.auto);
     else if (k === 'm' || k === 'M') this.setMuted(!this.muted);
+    else if (k === 't' || k === 'T') this.setTypewriter(!this.typewriter);
     else if (/^[1-9]$/.test(k) && this.steps[this.i] && this.steps[this.i].choices) this.choose(+k - 1);
     else if (k === 'Tab') used = false;
     else used = !(e.ctrlKey || e.metaKey);   // app shortcuts (undo …) stay off while the player is open
