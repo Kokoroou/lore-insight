@@ -10,7 +10,7 @@
      (libraries are vendored in vendor/), plus the anonymous GoatCounter pixel (js/analytics.js) and the feedback inbox in connect-src,
      called only when the user taps a star or presses Send (js/feedback.js).
      The page makes no network requests with game data. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://makerlens.goatcounter.com; connect-src 'self' https://feedback.kokoroou.workers.dev; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://makerlens.goatcounter.com; connect-src 'self' https://feedback.kokoroou.workers.dev; media-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
 <title>RPG Maker Event Viewer — MV &amp; MZ event flow graph | MakerLens Events</title>
 <meta name="description" content="Free online RPG Maker event viewer. See the dialogue, choices, conditions and switches of any MV or MZ game as a flow graph, right in your browser. No project, no install, files never uploaded.">
 <meta name="keywords" content="RPG Maker event viewer, RPG Maker MV event flow, RPG Maker MZ events, common events viewer, RPG Maker switches, RPG Maker dialogue tree">
@@ -90,6 +90,12 @@
   <symbol id="i-send" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M13 6l6 6-6 6"/></symbol>
   <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
   <symbol id="i-bug" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="7" width="10" height="13" rx="5"/><path d="M12 11v9M7 13H3M21 13h-4M7 17l-3 2M17 17l3 2M7 9L4 7M17 9l3-2M9 7a3 3 0 016 0"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M7 4.5v15l12-7.5z"/></symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4.5" width="4" height="15" rx="1"/><rect x="14" y="4.5" width="4" height="15" rx="1"/></symbol>
+  <symbol id="i-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></symbol>
+  <symbol id="i-volume" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 5v14l-4.5-4.5H4z"/><path d="M15.5 9a4 4 0 010 6M18.5 6.5a7.5 7.5 0 010 11"/></symbol>
+  <symbol id="i-mute" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 5v14l-4.5-4.5H4z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></symbol>
+  <symbol id="i-film" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 4v16M17 4v16M3 9h4M3 15h4M17 9h4M17 15h4"/></symbol>
   <symbol id="i-bulb" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 00-3.5 10.9c.6.5 1 1.2 1 2V16h5v-.1c0-.8.4-1.5 1-2A6 6 0 0012 3z"/></symbol>
 </svg>
 
@@ -177,6 +183,9 @@
         </button>
         <span id="event-breadcrumb"></span>
         <div id="page-tabs" role="tablist" aria-label="Event pages"></div>
+        <button class="btn-primary btn-sm" id="scene-play" type="button" hidden title="Preview this scene with its pictures, dialogue and sound">
+          <svg width="14" height="14" aria-hidden="true"><use href="#i-play"/></svg>Preview
+        </button>
       </div>
 
       <!-- Graph + detail -->
@@ -257,6 +266,7 @@
         <li>Pick a map from the sidebar, then click an event to view its command flow as a node graph.</li>
         <li>Use the page tabs to switch between event pages. Click any node to inspect its full content in the right panel.</li>
         <li>Common Events are listed below the maps in the sidebar.</li>
+        <li>Scenes (pictures with dialogue) are listed at the top of the sidebar: click one, or press <strong>Preview</strong>, to play it like in the game.</li>
       </ol>
       <p class="about-more">Want the game's images and music? Open <a href="https://makerlens.kokoroou.workers.dev/assets/">MakerLens Assets</a>.</p>
       <p class="about-more">Questions? Read the <a href="faq.html">FAQ</a>: which folder to open, what the graph shows, privacy.</p>
@@ -383,6 +393,53 @@
   </div>
 </div>
 
+<!-- Scene player (player.js): a dark lightbox that plays a scene step by step -->
+<div id="player" role="dialog" aria-modal="true" aria-labelledby="pl-title" tabindex="-1" hidden>
+  <div class="pl-top">
+    <svg class="pl-top-icon" width="20" height="20" aria-hidden="true"><use href="#i-film"/></svg>
+    <div class="pl-titles">
+      <div id="pl-title"></div>
+      <div id="pl-sub"></div>
+    </div>
+    <div id="pl-note" role="status"></div>
+    <button type="button" class="pl-btn" id="pl-close" title="Close (Esc)" aria-label="Close preview">
+      <svg width="20" height="20" aria-hidden="true"><use href="#i-x"/></svg>
+    </button>
+  </div>
+  <div class="pl-main" id="pl-main">
+    <button type="button" class="pl-side pl-side-prev" id="pl-side-prev" title="Previous (←)" aria-label="Previous line">
+      <svg width="28" height="28" aria-hidden="true"><use href="#i-left"/></svg>
+    </button>
+    <div id="pl-frame">
+      <div id="pl-stage">
+        <div id="pl-pics"></div>
+        <div id="pl-fade"></div>
+        <div id="pl-msg" hidden>
+          <div id="pl-namebox" hidden></div>
+          <div id="pl-face" hidden></div>
+          <div id="pl-text"></div>
+          <div id="pl-choices" role="group" aria-label="Choices" hidden></div>
+        </div>
+      </div>
+    </div>
+    <button type="button" class="pl-side pl-side-next" id="pl-side-next" title="Next (→ / Space)" aria-label="Next line">
+      <svg width="28" height="28" aria-hidden="true"><use href="#i-right"/></svg>
+    </button>
+  </div>
+  <div class="pl-bar">
+    <input type="range" id="pl-seek" min="0" max="0" value="0" step="1" aria-label="Line">
+    <div class="pl-ctrl">
+      <button type="button" class="pl-btn" id="pl-prev" title="Previous (←)" aria-label="Previous line"><svg width="20" height="20" aria-hidden="true"><use href="#i-left"/></svg></button>
+      <button type="button" class="pl-btn pl-btn-main" id="pl-auto" title="Auto play (A)" aria-label="Auto play" aria-pressed="false"><svg width="20" height="20" aria-hidden="true"><use href="#i-play"/></svg></button>
+      <button type="button" class="pl-btn" id="pl-next" title="Next (→ / Space)" aria-label="Next line"><svg width="20" height="20" aria-hidden="true"><use href="#i-right"/></svg></button>
+      <span id="pl-count" aria-live="polite"></span>
+      <span class="pl-spacer"></span>
+      <button type="button" class="pl-btn" id="pl-mute" title="Mute (M)" aria-label="Mute" aria-pressed="false"><svg width="20" height="20" aria-hidden="true"><use href="#i-volume"/></svg></button>
+      <input type="range" id="pl-vol" min="0" max="100" value="80" step="1" aria-label="Volume">
+    </div>
+  </div>
+</div>
+
 <!-- Hidden fallback file input -->
 <input type="file" id="folder-input" webkitdirectory multiple accept="">
 
@@ -397,7 +454,10 @@
 <script src="js/state.js"></script>
 <script src="js/graph.js"></script>
 <script src="js/detail.js"></script>
-<script src="js/highlights.js"></script>
+<script src="js/scenes.js"></script>
+<script src="js/scene-script.js"></script>
+<script src="js/media.js"></script>
+<script src="js/player.js"></script>
 <script src="js/sidebar.js"></script>
 <script src="js/history.js"></script>
 <script src="js/loadui.js"></script>

@@ -97,6 +97,10 @@
 .sb-count.pending { opacity: .6; }   /* Map###.json not read yet (loader.js) */
 
 /* Gallery & Memories shortcuts above the map tree */
-.sb-hl-title { color: var(--a); }
-.sb-hl .sb-icon { color: var(--a); }
-.sb-hl-more { padding: 4px 8px; font-size: 11px; color: var(--t3); }
+.sb-scenes-title { color: var(--a); }
+.sb-scene .sb-icon { color: var(--a); }
+.sb-scenes-more {
+  display: block; width: 100%; padding: 6px 8px; text-align: left;
+  font-size: 12px; color: var(--a); background: none; border: 0; cursor: pointer;
+}
+.sb-scenes-more:hover { text-decoration: underline; }

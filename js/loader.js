@@ -1,6 +1,7 @@
 /* ── File loading ────────────────────────────────────── */
 // Two rules keep slow machines responsive (same idea as MakerLens Assets):
-// 1. Only data/*.json is listed and read: img/, audio/, movies/ are never walked.
+// 1. Opening a game lists and reads data/*.json only: img/, audio/, movies/ are never
+//    walked. The scene player reads its pictures and sounds later, one file at a time (media.js).
 // 2. The map tree shows as soon as MapInfos/System/Actors/CommonEvents are read;
 //    Map###.json files are read on demand (the map the user opens first) and the
 //    rest in the background, which waits while a foreground read is running.
@@ -112,6 +113,12 @@ async function loadFiles(files, id, guard) {
   S.commonEvents = cevs ? parseCommonEvents(cevs) : [];
   S.maps = new Map();
   S.mapFiles = new Map([...mapFiles].sort((a, b) => a[0] - b[0]));
+  // The game folder (parent of data/), for the scene player's pictures and audio (media.js).
+  if (typeof Media !== 'undefined') {
+    const root = files.gameRoot ? treeRoot(files.gameRoot.fs, files.gameRoot.node)
+      : dataPrefix ? filesRoot(fileMap, dataPrefix.replace(/data\/$/i, '')) : null;
+    Media.reset(root, system);
+  }
   S.selectedMapId = null;
   S.selectedEvId = null;
   S.currentPage = null;
@@ -234,14 +241,16 @@ function refreshSidebarSoon() {
   sidebarTimer = setTimeout(() => { sidebarTimer = 0; renderSidebar(); }, 400);
 }
 
+// The file in the chosen data folder first: a game can ship more (data-en/, data-tw/ …).
 function findFile(fileMap, prefix, name) {
   const target = (prefix + name).toLowerCase();
+  let fallback = null;
   for (const [path, file] of fileMap) {
-    if (path.toLowerCase() === target || path.toLowerCase().endsWith('/' + name.toLowerCase())) {
-      return file;
-    }
+    const p = path.toLowerCase();
+    if (p === target) return file;
+    if (!fallback && (p === name.toLowerCase() || p.endsWith('/' + name.toLowerCase()))) fallback = file;
   }
-  return null;
+  return fallback;
 }
 
 function setStatus(cls, html) {
@@ -280,25 +289,28 @@ const FS_ENTRY = {
 
 // Breadth-first from the selected folder: the first folder holding Map###.json wins
 // (a folder named data first at each level). Returns lazy file-likes for the
-// data/*.json files only; nothing is read until text() is called.
+// data/*.json files only; nothing is read until text() is called. The folder above
+// it (the game root, where img/ and audio/ live) rides along as files.gameRoot.
 async function findDataFiles(root, fs, onDir) {
-  let level = [{ dir: root, path: '' }];
+  let level = [{ dir: root, path: '', parent: null }];
   for (let depth = 0; depth <= DATA_DEPTH && level.length; depth++) {
     const next = [];
-    for (const { dir, path } of level) {
+    for (const { dir, path, parent } of level) {
       if (onDir) onDir(path);
       const kids = await fs.list(dir);
       const files = kids.filter(k => !k.isDir && DATA_FILE.test(k.name));
       if (files.some(k => MAP_FILE.test(k.name))) {
-        return files.map(k => ({
+        const out = files.map(k => ({
           name: k.name,
           _dragPath: path + k.name,
           text: () => fs.file(k.node).then(f => f.text()),
         }));
+        out.gameRoot = parent ? { fs, node: parent } : null;
+        return out;
       }
       kids.filter(k => k.isDir && !SKIP_DIRS.test(k.name))
         .sort((a, b) => (/^data$/i.test(b.name) ? 1 : 0) - (/^data$/i.test(a.name) ? 1 : 0))
-        .forEach(k => next.push({ dir: k.node, path: path + k.name + '/' }));
+        .forEach(k => next.push({ dir: k.node, path: path + k.name + '/', parent: dir }));
     }
     level = next;
   }

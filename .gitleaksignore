@@ -1,0 +1,4 @@
+# Gitleaks false positives (one fingerprint per line: commit:file:rule:line).
+# tests/media.test.mjs once held a made-up test key (00 11 22 … ff) as a literal; the
+# next commit builds it in code instead, but this PR commit still contains it.
+321247e632f8b1eb19e7b21d48de1f9235a01be2:tests/media.test.mjs:generic-api-key:5
