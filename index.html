@@ -96,6 +96,7 @@
   <symbol id="i-volume" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 5v14l-4.5-4.5H4z"/><path d="M15.5 9a4 4 0 010 6M18.5 6.5a7.5 7.5 0 010 11"/></symbol>
   <symbol id="i-mute" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 5v14l-4.5-4.5H4z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></symbol>
   <symbol id="i-film" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 4v16M17 4v16M3 9h4M3 15h4M17 9h4M17 15h4"/></symbol>
+  <symbol id="i-type" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3M9 20h6M12 4v16"/></symbol>
   <symbol id="i-bulb" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 00-3.5 10.9c.6.5 1 1.2 1 2V16h5v-.1c0-.8.4-1.5 1-2A6 6 0 0012 3z"/></symbol>
 </svg>
 
@@ -434,6 +435,7 @@
       <button type="button" class="pl-btn" id="pl-next" title="Next (→ / Space)" aria-label="Next line"><svg width="20" height="20" aria-hidden="true"><use href="#i-right"/></svg></button>
       <span id="pl-count" aria-live="polite"></span>
       <span class="pl-spacer"></span>
+      <button type="button" class="pl-btn" id="pl-type" title="Typewriter text (T)" aria-label="Typewriter text" aria-pressed="true"><svg width="20" height="20" aria-hidden="true"><use href="#i-type"/></svg></button>
       <button type="button" class="pl-btn" id="pl-mute" title="Mute (M)" aria-label="Mute" aria-pressed="false"><svg width="20" height="20" aria-hidden="true"><use href="#i-volume"/></svg></button>
       <input type="range" id="pl-vol" min="0" max="100" value="80" step="1" aria-label="Volume">
     </div>

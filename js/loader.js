@@ -108,6 +108,8 @@ async function loadFiles(files, id, guard) {
     if (info.expanded === false) S.collapsedFolders.add(i);
   });
   S.actors       = Array.isArray(actors) ? actors.map(a => (a && a.name) || '') : [];
+  S.actorStart   = Array.isArray(actors) ? actors.map(a => a ? { name: a.name || '', classId: a.classId || 0, equips: Array.isArray(a.equips) ? a.equips : [] } : null) : [];
+  S.party        = (system && Array.isArray(system.partyMembers)) ? system.partyMembers : [];
   S.variables    = (system && system.variables) || [];
   S.switches     = (system && system.switches)  || [];
   S.commonEvents = cevs ? parseCommonEvents(cevs) : [];

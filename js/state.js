@@ -10,6 +10,8 @@ const S = {
   selectedPage:     0,
   detailOpen:       false,
   actors:           [],         // index → actor name
+  actorStart:       [],         // index → { name, classId, equips } at the start (Actors.json)
+  party:            [],         // actor ids in the starting party (System.json)
   variables:        [],         // index → variable name
   switches:         [],         // index → switch name
   currentNodes:     [],
