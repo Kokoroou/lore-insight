@@ -1,0 +1,123 @@
+/* ── Scene player (js/player.js) ──────────────────────────
+   Always dark, whatever the theme: like a video preview on Google Drive, the page
+   dims and the scene sits in the middle. The stage is drawn in game pixels
+   (816×624, 1280×720 …) and scaled to fit; its fonts and boxes scale with it. */
+body.pl-open { overflow: hidden; }
+
+#player {
+  --pl-fg: #e8eaed;
+  --pl-fg2: #bdc1c6;
+  --pl-hover: rgba(255,255,255,.12);
+  --pl-accent: #4ade80;
+  --pl-win: linear-gradient(180deg, rgba(20,30,58,.86), rgba(8,12,30,.9));
+  --pl-win-bd: rgba(255,255,255,.6);
+  position: fixed; inset: 0; z-index: 1000;
+  display: flex; flex-direction: column;
+  background: rgba(6,8,12,.94);
+  color: var(--pl-fg);
+  font-family: var(--font);
+  animation: pl-in .18s var(--ease);
+}
+#player[hidden] { display: none; }
+#player:focus { outline: none; }
+@keyframes pl-in { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { #player { animation: none; } }
+
+/* Top bar */
+.pl-top { display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 0 8px 0 16px; flex-shrink: 0; }
+.pl-top-icon { color: var(--pl-accent); flex-shrink: 0; }
+.pl-titles { flex: 1; min-width: 0; }
+#pl-title { font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#pl-sub { font-size: 12px; color: var(--pl-fg2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#pl-note { font-size: 12px; color: #fbbf24; text-align: right; max-width: 45%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.pl-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px; flex-shrink: 0;
+  color: var(--pl-fg); background: transparent; border: 0; border-radius: 999px;
+  cursor: pointer; transition: background .15s var(--ease);
+}
+.pl-btn:hover { background: var(--pl-hover); }
+.pl-btn:focus-visible, .pl-side:focus-visible, .pl-choice:focus-visible { outline: 2px solid var(--pl-accent); outline-offset: 2px; }
+.pl-btn-main { background: var(--pl-accent); color: #052e16; }
+.pl-btn-main:hover { background: #86efac; }
+
+/* Stage */
+.pl-main { flex: 1; min-height: 0; position: relative; display: flex; align-items: center; justify-content: center; }
+#pl-frame { position: relative; overflow: hidden; background: #000; border-radius: 4px; box-shadow: 0 12px 48px rgba(0,0,0,.6); }
+#pl-stage {
+  position: absolute; left: 0; top: 0; overflow: hidden;
+  transform-origin: 0 0; cursor: pointer; user-select: none; -webkit-user-select: none;
+  color: #fff; font-size: 26px; line-height: 36px;
+}
+.pl-pic { position: absolute; max-width: none; transform-origin: 0 0; pointer-events: none; }
+.pl-pic[data-origin="1"] { transform-origin: center; }
+#pl-fade { position: absolute; inset: 0; z-index: 1; background: #000; opacity: 0; pointer-events: none; transition: opacity .3s var(--ease); }
+#pl-fade.on { opacity: 1; }
+
+.pl-side {
+  position: absolute; top: 50%; transform: translateY(-50%); z-index: 2;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 48px; height: 48px; border: 0; border-radius: 999px;
+  color: var(--pl-fg); background: rgba(255,255,255,.08); cursor: pointer;
+  transition: background .15s var(--ease);
+}
+.pl-side:hover { background: rgba(255,255,255,.18); }
+.pl-side-prev { left: 16px; }
+.pl-side-next { right: 16px; }
+
+/* Message window, in game pixels */
+#pl-msg { position: absolute; left: 0; right: 0; z-index: 2; padding: 18px 24px; text-shadow: 0 0 4px #000, 1px 1px 2px #000; }
+#pl-text { white-space: pre-wrap; overflow-wrap: anywhere; }
+#pl-msg[hidden] { display: none; }
+#pl-msg.pl-pos-2 { bottom: 0; }
+#pl-msg.pl-pos-0 { top: 0; }
+#pl-msg.pl-pos-1 { top: 50%; transform: translateY(-50%); }
+#pl-msg.pl-bg-0 { left: 8px; right: 8px; background: var(--pl-win); border: 2px solid var(--pl-win-bd); border-radius: 10px; }
+#pl-msg.pl-bg-0.pl-pos-2 { bottom: 8px; }
+#pl-msg.pl-bg-0.pl-pos-0 { top: 8px; }
+#pl-msg.pl-bg-1 { background: linear-gradient(90deg, transparent, rgba(0,0,0,.7) 15%, rgba(0,0,0,.7) 85%, transparent); }
+#pl-msg.pl-has-face { padding-left: 182px; }
+#pl-msg.pl-scroll { top: 0; bottom: 0; display: flex; align-items: center; justify-content: center; text-align: center; background: rgba(0,0,0,.55); }
+#pl-msg.pl-only-choices { height: 0; padding: 0; background: none; border: 0; }
+#pl-face { position: absolute; left: 18px; top: 18px; width: 144px; height: 144px; background-repeat: no-repeat; }
+#pl-face[hidden] { display: none; }
+#pl-namebox {
+  position: absolute; left: 0; bottom: 100%; margin-bottom: 6px;
+  padding: 2px 18px; font-size: 24px; line-height: 36px; white-space: nowrap;
+  background: var(--pl-win); border: 2px solid var(--pl-win-bd); border-radius: 10px;
+}
+#pl-namebox[hidden] { display: none; }
+#pl-msg.pl-pos-0 #pl-namebox { top: 100%; bottom: auto; margin: 6px 0 0; }
+#pl-choices {
+  position: absolute; right: 0; bottom: calc(100% + 8px);
+  display: flex; flex-direction: column; min-width: 260px; max-width: 70%; padding: 8px;
+  background: var(--pl-win); border: 2px solid var(--pl-win-bd); border-radius: 10px;
+}
+#pl-choices[hidden] { display: none; }
+#pl-msg.pl-pos-0 #pl-choices { top: calc(100% + 8px); bottom: auto; }
+.pl-choice {
+  display: block; width: 100%; padding: 4px 16px; text-align: left;
+  font: inherit; font-size: 24px; color: #fff; text-shadow: inherit;
+  background: transparent; border: 0; border-radius: 6px; cursor: pointer;
+}
+.pl-choice:hover { background: rgba(255,255,255,.14); }
+.pl-choice.chosen { background: rgba(74,222,128,.24); box-shadow: inset 0 0 0 1px var(--pl-accent); }
+
+/* Controls */
+.pl-bar { flex-shrink: 0; padding: 4px 16px 12px; }
+#pl-seek { display: block; width: 100%; margin: 0 0 4px; accent-color: var(--pl-accent); cursor: pointer; }
+.pl-ctrl { display: flex; align-items: center; gap: 6px; }
+#pl-count { margin-left: 8px; font-size: 13px; color: var(--pl-fg2); font-variant-numeric: tabular-nums; }
+.pl-spacer { flex: 1; }
+#pl-vol { width: 96px; accent-color: var(--pl-accent); cursor: pointer; }
+
+@media (max-width: 700px) {
+  .pl-side { display: none; }
+  #pl-note { display: none; }
+}
+@media (max-width: 600px) {
+  .pl-btn { width: 44px; height: 44px; }
+  #pl-vol { width: 64px; }
+  .pl-bar { padding: 4px 12px 10px; }
+}

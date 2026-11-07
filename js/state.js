@@ -15,6 +15,8 @@ const S = {
   currentNodes:     [],
   currentPage:      null,       // current page object {list} (read-only)
   collapsedFolders: new Set(),  // mapIds the user has manually collapsed
+  scenesExpanded:   false,      // sidebar lists every scene, not the first few
+  sceneEntry:       null,       // what the toolbar's Preview button plays (player.js)
   history:          [],         // undo stack: {type, ...}
   future:           [],         // redo stack
 };

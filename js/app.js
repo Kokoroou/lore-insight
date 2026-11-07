@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     'scan-status','setup-status','event-breadcrumb','page-tabs',
     'event-picker','event-list-grid','detail-panel','detail-body',
     'open-btn','about-btn','about-modal','about-close','theme-toggle',
-    'detail-toggle','sidebar-toggle','cy-fit','cy-zoom-in','cy-zoom-out',
+    'detail-toggle','sidebar-toggle','cy-fit','cy-zoom-in','cy-zoom-out','scene-play',
   ].forEach(id => { EL[id.replace(/-([a-z])/g, (_,c)=>c.toUpperCase())] = document.getElementById(id); });
   EL.graphView = document.getElementById('graph-view');
   EL.sbResizer = document.getElementById('sb-resizer');
@@ -34,6 +34,7 @@ async function selectMap(mapId) {
   S.selectedEvId  = null;
   S.selectedPage  = 0;
   S.currentPage   = null;
+  setSceneEntry(null);
   renderSidebar();
   showGraphView();
   if (!S.maps.has(mapId) && S.mapFiles.has(mapId)) {
@@ -68,6 +69,7 @@ function selectCommonEvent(evId) {
   EL.pageTabs.innerHTML = '';
   EL.eventPicker.classList.add('hidden');
   S.currentPage = cev;
+  setSceneEntry({ title: cev.name, sub: `Common event ${cev.id}`, list: cev.list });
 
   const { nodes, edges } = parseEventPage(cev.list, `cev_${evId}`);
   if (nodes.length === 0) { renderEmptyPageNotice(); } else { renderGraph(nodes, edges); }
@@ -85,25 +87,30 @@ function showEventPicker(mapId) {
   const grid = EL.eventListGrid;
   grid.innerHTML = '';
 
-  // Gallery / recollection / memory events first (stable: the rest keeps map order).
-  const events = mapData.events.map(ev => ({ ev, hl: isHighlightName(ev.name) }))
-    .sort((a, b) => b.hl - a.hl).map(x => x.ev);
-  for (const ev of events) {
-    const hl = isHighlightName(ev.name);
+  // Events with a scene (pictures + dialogue, scenes.js) first; the rest keeps map order.
+  const events = mapData.events.map(ev => ({ ev, scene: ev.pages.findIndex(page => isSceneList(page.list)) }))
+    .sort((a, b) => (b.scene >= 0) - (a.scene >= 0));
+  for (const { ev, scene } of events) {
     const empty = !ev.pages.some(page => page.list.some(cmd => VISIBLE_CODES.has(cmd.code)));
-    const card = el('button', 'ev-card' + (empty ? ' ev-empty' : '') + (hl ? ' ev-hl' : ''));
+    const card = el('button', 'ev-card' + (empty ? ' ev-empty' : '') + (scene >= 0 ? ' ev-scene' : ''));
     card.type = 'button';
     card.appendChild(el('div', 'ev-card-name', ev.name));
     card.appendChild(el('div', 'ev-card-meta', `ID: ${ev.id} · (${ev.x},${ev.y}) · ${ev.pages.length} page${ev.pages.length !== 1 ? 's' : ''}`));
-    card.addEventListener('click', () => selectEvent(mapId, ev.id));
+    if (scene >= 0) {
+      const badge = el('div', 'ev-card-scene');
+      badge.appendChild(icon('play', 11));
+      badge.appendChild(document.createTextNode(`Scene · ${sceneStats(ev.pages[scene].list).pictures} pictures`));
+      card.appendChild(badge);
+    }
+    card.addEventListener('click', () => selectEvent(mapId, ev.id, Math.max(0, scene)));
     grid.appendChild(card);
   }
 }
 
-function selectEvent(mapId, evId) {
+function selectEvent(mapId, evId, page = 0) {
   S.selectedMapId = mapId;
   S.selectedEvId  = evId;
-  S.selectedPage  = 0;
+  S.selectedPage  = page;
 
   const mapData = S.maps.get(mapId);
   const ev = mapData?.events.find(e => e.id === evId);
@@ -115,14 +122,14 @@ function selectEvent(mapId, evId) {
 
   EL.pageTabs.innerHTML = '';
   ev.pages.forEach((_, pi) => {
-    const tab = el('button', 'page-tab' + (pi === 0 ? ' active' : ''), `Page ${pi + 1}`);
+    const tab = el('button', 'page-tab' + (pi === page ? ' active' : ''), `Page ${pi + 1}`);
     tab.setAttribute('role', 'tab');
-    tab.setAttribute('aria-selected', pi === 0 ? 'true' : 'false');
+    tab.setAttribute('aria-selected', pi === page ? 'true' : 'false');
     tab.addEventListener('click', () => selectPage(pi));
     EL.pageTabs.appendChild(tab);
   });
 
-  selectPage(0);
+  selectPage(ev.pages[page] ? page : 0);
 }
 
 function selectPage(pi) {
@@ -138,11 +145,28 @@ function selectPage(pi) {
   if (!ev || !ev.pages[pi]) return;
 
   S.currentPage = ev.pages[pi];
+  setSceneEntry({ title: ev.name, sub: `${mapData.mapName} · event ${ev.id}, page ${pi + 1}`, list: ev.pages[pi].list });
   const prefix = `map${S.selectedMapId}_ev${S.selectedEvId}_p${pi}`;
   const { nodes, edges } = parseEventPage(ev.pages[pi].list, prefix);
 
   if (nodes.length === 0) { renderEmptyPageNotice(); } else { renderGraph(nodes, edges); }
   clearDetail();
+}
+
+/* ── Scene preview (player.js) ───────────────────────── */
+// The toolbar's Preview button plays the page / common event on screen, when it shows
+// at least a picture or a message.
+function setSceneEntry(entry) {
+  const s = entry && sceneStats(entry.list);
+  S.sceneEntry = s && (s.pictures || s.messages) ? entry : null;
+  if (EL.scenePlay) EL.scenePlay.hidden = !S.sceneEntry;
+}
+
+// A scene from the sidebar: show it in the graph, then play it.
+function playScene(sc) {
+  if (sc.kind === 'common') selectCommonEvent(sc.evId);
+  else selectEvent(sc.mapId, sc.evId, sc.page);
+  if (S.sceneEntry) openScene(S.sceneEntry);
 }
 
 function renderEmptyPageNotice() {
@@ -220,6 +244,8 @@ function init() {
     EL.detailPanel.classList.toggle('hidden', !S.detailOpen);
     EL.detailToggle.classList.toggle('active', S.detailOpen);
   });
+
+  EL.scenePlay.addEventListener('click', () => { if (S.sceneEntry) openScene(S.sceneEntry); });
 
   EL.cyFit.addEventListener('click', () => cy?.fit(undefined, 32));
   EL.cyZoomIn.addEventListener('click',  () => cy?.zoom({ level: cy.zoom() * 1.3, renderedPosition: { x: cy.width()/2, y: cy.height()/2 } }));

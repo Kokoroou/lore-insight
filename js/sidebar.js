@@ -23,7 +23,7 @@ function renderSidebarItems(listEl) {
     return;
   }
 
-  renderHighlights(listEl);
+  renderScenes(listEl);
 
   if (hasMaps) {
     listEl.appendChild(el('div', 'sb-section', 'Maps'));
@@ -42,26 +42,32 @@ function renderSidebarItems(listEl) {
   }
 }
 
-// Gallery / recollection / memory entries pinned above the map tree (see highlights.js).
-const HIGHLIGHT_MAX = 40;
-function renderHighlights(listEl) {
-  const h = findHighlights();
-  if (h.total === 0) return;
-  listEl.appendChild(el('div', 'sb-section sb-hl-title', 'Gallery & Memories'));
-  let shown = 0;
-  const add = (icon, label, sub, active, onClick) => {
-    if (shown++ >= HIGHLIGHT_MAX) return;
-    const item = el('div', 'sb-item sb-hl' + (active ? ' active' : ''));
-    item.appendChild(iconEl(icon));
-    item.appendChild(el('span', 'sb-name', label));
-    if (sub) item.appendChild(el('span', 'sb-count', sub));
-    item.addEventListener('click', onClick);
+// Scenes (pictures + dialogue, see scenes.js) above the map tree; a click plays one.
+// Scenes of maps show up once the background reading has reached them.
+const SCENES_SHOWN = 30;
+function renderScenes(listEl) {
+  const scenes = findScenes();
+  if (!scenes.length) return;
+  listEl.appendChild(el('div', 'sb-section sb-scenes-title', `Scenes · ${scenes.length}`));
+  const shown = S.scenesExpanded ? scenes : scenes.slice(0, SCENES_SHOWN);
+  for (const sc of shown) {
+    const active = sc.kind === 'common'
+      ? S.selectedMapId === 'common' && S.selectedEvId === sc.evId
+      : S.selectedMapId === sc.mapId && S.selectedEvId === sc.evId && S.selectedPage === sc.page;
+    const item = el('div', 'sb-item sb-scene' + (active ? ' active' : ''));
+    item.title = `${sc.where} · ${sc.stats.pictures} pictures · ${sc.stats.messages} messages · click to preview`;
+    item.appendChild(iconEl('play'));
+    item.appendChild(el('span', 'sb-name', sc.name));
+    item.appendChild(el('span', 'sb-count', sc.kind === 'common' ? 'CE' : sc.where));
+    item.addEventListener('click', () => playScene(sc));
     listEl.appendChild(item);
-  };
-  for (const m of h.maps) add('map', m.name, '', S.selectedMapId === m.mapId && S.selectedEvId == null, () => selectMap(m.mapId));
-  for (const c of h.commons) add('zap', c.name, 'Common', S.selectedMapId === 'common' && S.selectedEvId === c.evId, () => selectCommonEvent(c.evId));
-  for (const e of h.events) add('zap', e.name, e.mapName, S.selectedMapId === e.mapId && S.selectedEvId === e.evId, () => selectEvent(e.mapId, e.evId));
-  if (h.total > HIGHLIGHT_MAX) listEl.appendChild(el('div', 'sb-hl-more', `+${h.total - HIGHLIGHT_MAX} more`));
+  }
+  if (scenes.length > SCENES_SHOWN) {
+    const more = el('button', 'sb-scenes-more', S.scenesExpanded ? 'Show fewer' : `Show all ${scenes.length}`);
+    more.type = 'button';
+    more.addEventListener('click', () => { S.scenesExpanded = !S.scenesExpanded; renderSidebar(); });
+    listEl.appendChild(more);
+  }
 }
 
 function renderMapTree(container) {

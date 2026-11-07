@@ -61,6 +61,9 @@ Folder picker / drop
   → selectEvent() → selectPage()
       → parseEventPage(page.list, prefix) [parser.js]
       → renderGraph(nodes, edges) [app.js]
+  → Preview / a sidebar scene → openScene() [player.js]
+      → sceneTimeline(list) [scene-script.js] → steps
+      → Media.image()/audio() [media.js]: img/ and audio/ read one file at a time
 ```
 
 ### The parser (`js/parser.js`)
@@ -75,6 +78,13 @@ Folder picker / drop
 `describeCondition(params)` reads `S.switches` / `S.variables` / `S.actors` (global `S`) to show human-readable names in condition nodes.
 
 `resolveTextCodes(str)` expands `\N[n]` → actor name and `\V[n]` → variable name (with ID suffix).
+
+### Scenes and the scene player
+
+- `scenes.js`: a **scene** is found by content, never by name: a command list with at least 2 Show Picture (231) and 3 messages (101/105). `findScenes()` feeds the sidebar's "Scenes" section (common events, then map event pages as maps are read); scene events come first in the event picker.
+- `scene-script.js` (no DOM, tested in node): `sceneTimeline(list, getCommon)` runs the commands like `Game_Interpreter` and stops at each message. A step = `{ msg, choices, pics, bgm, bgs, fade, sounds, anim, state }`; `anim` holds picture frames split by waits (flipbook animations, Move Picture), sounds carry the frame they start on. Rules: calls (117) inline; loops once; backward jumps once; choices are preselected on the branch that shows the most (lookahead, so "Skip scene?" does not skip) and `sceneChoose()` re-runs from a choice the viewer picks; conditions take the true branch, except a first check of an unknown switch/variable, which tries both answers ahead and then REMEMBERS the value so later checks agree. Control Switches/Variables inside the scene are followed (random = minimum). Plugin commands (356/357) and scripts (355) are skipped.
+- `media.js`: `Media.reset(root, system)` at commit (loader.js) with the game root (parent of `data/`: `treeRoot()` over FS_HANDLE/FS_ENTRY, or `filesRoot()` over the `<input webkitdirectory>` list). Only the folders on the way to a file are listed; each file is read when first shown, decrypted in memory with System.json's `encryptionKey` (`decryptMVMZ`, same as MakerLens Assets), typed by its bytes (`sniffMime`: some games ship WebP as `.png_`) and served as a blob URL (CSP `media-src blob:`). Screen size: MZ System.json, else an MV resolution plugin in `js/plugins.js`, else 816×624.
+- `player.js` + `css/player.css`: the dark lightbox (always dark, like a Google Drive video preview). Stage in game pixels scaled to fit; pictures by number order, message window with face / name box, choices as buttons. Click/→/Space next, ← back, A auto, M mute, Esc close; volume in `localStorage['mle-player']`. Opening a scene never changes or exports anything: the tool stays read-only.
 
 ### State (`js/app.js` — global `S`)
 

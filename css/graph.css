@@ -23,6 +23,7 @@
 
 /* Page tabs: pill chips like Assets' filter type buttons */
 #page-tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+#scene-play[hidden] { display: none; }
 .page-tab {
   display: inline-flex; align-items: center; justify-content: center;
   height: 32px; padding: 0 12px;
