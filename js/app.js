@@ -162,11 +162,12 @@ function setSceneEntry(entry) {
   if (EL.scenePlay) EL.scenePlay.hidden = !S.sceneEntry;
 }
 
-// A scene from the sidebar: show it in the graph, then play it.
-function playScene(sc) {
+// A scene from the sidebar (or the player's next / previous scene): show it in the
+// graph, then play it.
+function playScene(sc, opts) {
   if (sc.kind === 'common') selectCommonEvent(sc.evId);
   else selectEvent(sc.mapId, sc.evId, sc.page);
-  if (S.sceneEntry) openScene(S.sceneEntry);
+  if (S.sceneEntry) openScene(S.sceneEntry, opts);
 }
 
 function renderEmptyPageNotice() {
