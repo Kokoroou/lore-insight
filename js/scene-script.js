@@ -627,6 +627,7 @@ function sceneNext(st, getCommon, plain) {
         if (a) { sounds.push(Object.assign({ kind: cmd.code === 249 ? 'me' : 'se', at: anim.length }, a)); changed = true; }
         break;
       }
+      case 251: sounds.push({ kind: 'se', stop: true, at: anim.length }); break;   // Stop SE
     }
   }
   // After the last message: a closing picture or sound still gets its own step.
