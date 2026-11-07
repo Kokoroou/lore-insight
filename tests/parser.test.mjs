@@ -239,3 +239,12 @@ test('layoutPlan: big pages defer the layout, huge ones also use the cheaper ran
   assert.deepEqual(plain(plan(399)),  { defer: true,  ranker: 'network-simplex' });
   assert.deepEqual(plain(plan(400)),  { defer: true,  ranker: 'longest-path' });
 });
+
+test('resolveTextCodes turns <br> into a line break and drops other HTML-like tags', () => {
+  reset();
+  assert.equal(resolveTextCodes('Hello<br>there<BR/>you'), 'Hello\nthere\nyou');
+  assert.equal(resolveTextCodes('<b>Bold</b> and <font color="red">red</font>'), 'Bold and red');
+  assert.equal(resolveTextCodes('<WordWrap>Long line'), 'Long line');
+  assert.equal(resolveTextCodes('I <3 you, 1 < 2 &amp; a&nbsp;b'), 'I <3 you, 1 < 2 & a b');
+  assert.equal(resolveTextCodes('\\n<Harold>Hi'), '\\n<Harold>Hi');
+});

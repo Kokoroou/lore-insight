@@ -53,3 +53,14 @@ function layoutPlan(count) {
     ranker: count >= LAYOUT_FAST_NODES ? 'longest-path' : 'network-simplex',
   };
 }
+
+// Some message plugins read HTML-like tags in the text (<br>, <b>, <i>, <font …>,
+// <WordWrap>). <br> becomes a line break, other tags are dropped and the common
+// entities decoded. "<3", "a < b" and a "\n<Name>" speaker tag are left alone.
+function textTags(str) {
+  return String(str || '')
+    .replace(/(?<!\\[A-Za-z]*)<br\s*\/?>/gi, '\n')
+    .replace(/(?<!\\[A-Za-z]*)<\/?[A-Za-z][\w:-]*(?:\s[^<>]*)?\/?>/g, '')
+    .replace(/&nbsp;/gi, ' ').replace(/&lt;/gi, '<').replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"').replace(/&#39;/g, "'").replace(/&amp;/gi, '&');
+}

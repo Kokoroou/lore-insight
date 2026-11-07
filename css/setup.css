@@ -88,17 +88,6 @@
 #setup-status.warn { color: var(--warn); background: color-mix(in srgb, var(--warn) 12%, transparent); }
 #setup-status.info { color: var(--t2);   background: var(--s2); display: flex; align-items: center; gap: 8px; }
 
-/* ── Divider + sibling tool ──────────────────────────── */
-.or-divider {
-  display: flex; align-items: center; gap: 12px;
-  font-size: 12px; color: var(--t3);
-  text-transform: uppercase; letter-spacing: .08em;
-}
-.or-divider::before, .or-divider::after { content: ''; flex: 1; height: 1px; background: var(--bd); }
-.setup-alt { display: flex; justify-content: center; }
-/* the label is long: let it wrap on a phone instead of running off-screen */
-.setup-alt .btn-ghost { max-width: 100%; height: auto; min-height: 40px; padding: 8px 16px; white-space: normal; text-align: center; }
-
 /* ── Privacy note ────────────────────────────────────── */
 .privacy-note {
   display: flex; align-items: center; justify-content: center; gap: 8px;

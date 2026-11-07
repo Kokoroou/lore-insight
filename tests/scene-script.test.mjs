@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { c, load, plain } from './helpers.mjs';
 
 function setup(commons = {}) {
-  const run = load(['scenes.js', 'scene-script.js']);
+  const run = load(['constants.js', 'scenes.js', 'scene-script.js']);
   run(`var S = { actors: ['', 'Harold'], variables: [], switches: [], commonEvents: [], maps: new Map() }`);
   run('globalThis').__commons = commons;
   const timeline = list => plain(run('sceneTimeline')(list, id => commons[id] || null));
@@ -250,4 +250,14 @@ test('PictureVariableSetting: picture numbers from variables, file names with \\
   ]);
   assert.deepEqual(ids(steps[0]), [1, 7]);
   assert.equal(steps[0].pics[1].name, 'stand_3');
+});
+
+test('HTML-like tags in messages: <br> breaks the line, other tags are dropped', () => {
+  const { timeline } = setup();
+  const steps = timeline([
+    pic(1, 'bg'), pic(2, 'girl'),
+    ...say(['\\n<Mia><b>Hi</b><br>there']), ...say(['Two']), ...say(['Three']), c(0, 0),
+  ]);
+  assert.equal(steps[0].msg.text, 'Hi\nthere');
+  assert.equal(steps[0].msg.name, 'Mia');
 });
