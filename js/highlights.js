@@ -8,13 +8,15 @@ const HIGHLIGHT_RE = new RegExp([
   'crystal|crystals|shard|shards|fragment|fragments|replay|album|flashback|cg\\s*room|' +
   'scene\\s*(select|replay|room|list)|event\\s*(replay|viewer|list))\\b',
   // Vietnamese
-  'ký ức|kí ức|pha lê|mảnh|hồi tưởng|thư viện|xem lại',
+  // ("thư viện" alone is a plain library, so only a CG / picture library counts)
+  'ký ức|kí ức|hồi ức|kỷ niệm|kỉ niệm|pha lê|mảnh|hồi tưởng|thư viện\\s*(cg|ảnh|hình)|xem lại',
   // Japanese / Chinese
   '回想|回憶|回忆|鑑賞|鉴赏|ギャラリー|思い出|思い出|想い出|記憶|记忆|水晶|クリスタル|アルバム|相册|画廊|畫廊'
 ].join('|'), 'i');
 
 function isHighlightName(name) {
-  return typeof name === 'string' && HIGHLIGHT_RE.test(name);
+  // NFC: Vietnamese names may be stored decomposed (NFD).
+  return typeof name === 'string' && HIGHLIGHT_RE.test(name.normalize('NFC'));
 }
 
 // Matching maps (by map name, known as soon as MapInfos is read), events of the maps
@@ -27,7 +29,11 @@ function findHighlights() {
     if (isHighlightName(name)) maps.push({ mapId: id, name });
   }
   maps.sort((a, b) => a.mapId - b.mapId);
+  // Events of a pinned map are left out: the map entry already leads to them (a
+  // recollection room can hold hundreds of "回想用" events).
+  const pinned = new Set(maps.map(m => m.mapId));
   for (const [mapId, data] of S.maps) {
+    if (pinned.has(mapId)) continue;
     for (const ev of data.events) {
       if (isHighlightName(ev.name)) events.push({ mapId, evId: ev.id, name: ev.name, mapName: data.mapName });
     }
