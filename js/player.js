@@ -3,7 +3,7 @@
    at the game's screen size (scaled to fit), the controls run along the bottom.
    Each step of the timeline (scene-script.js) is one message with the pictures and
    music of that moment. Click / → / Space: next, ←: back, A: auto, M: mute,
-   T: typewriter text, H: hide the dialogue, Esc: close.
+   H: hide the dialogue, Esc: close.
    Scenes run on into each other (in the sidebar's order, findScenes()): next on the
    last message opens the next scene, back on the first one opens the previous scene
    at its end; Shift+← / Shift+→ jump a whole scene. Auto play carries on.
@@ -13,7 +13,7 @@
    Like the game, sound effects run on into the next message; an ME holds the BGM
    until it ends. A click during an animation
    skips it (the skipped frames stay silent).
-   Messages type themselves out at reading speed (PLAYER_WPM; T turns it off); a click
+   Messages type themselves out at reading speed (PLAYER_WPM); a click
    while typing shows the whole message, like the game. */
 const PLAYER_PREF_KEY = 'mle-player';      // { vol, muted } of this viewer (never sent)
 const PLAYER_FACE = 144;                   // face graphics: 4×2 cells of 144px
@@ -36,7 +36,6 @@ const Player = {
   auto: false, timer: 0,
   anim: null,               // { step, k, timer } while a step's animation plays
   typing: null,             // { chars, n, start, per, raf, choices } while a message types out
-  typewriter: true,
   hideMsg: false,           // H: the dialogue is hidden to see the pictures
   vol: 0.8, muted: false,
   W: SCREEN_MV.width, H: SCREEN_MV.height,
@@ -55,7 +54,7 @@ const Player = {
       main: $('pl-main'), frame: $('pl-frame'), stage: $('pl-stage'), pics: $('pl-pics'), fade: $('pl-fade'),
       msg: $('pl-msg'), namebox: $('pl-namebox'), face: $('pl-face'), text: $('pl-text'), choices: $('pl-choices'),
       seek: $('pl-seek'), count: $('pl-count'), auto: $('pl-auto'), mute: $('pl-mute'), volume: $('pl-vol'),
-      type: $('pl-type'), hide: $('pl-hide'), scenePrev: $('pl-scene-prev'), sceneNext: $('pl-scene-next'),
+      hide: $('pl-hide'), scenePrev: $('pl-scene-prev'), sceneNext: $('pl-scene-next'),
     };
     // The text is two spans: what has been typed, and the rest laid out but invisible.
     this.el.shown = document.createElement('span');
@@ -66,7 +65,6 @@ const Player = {
       const p = JSON.parse(localStorage.getItem(PLAYER_PREF_KEY) || '{}');
       if (typeof p.vol === 'number') this.vol = Math.max(0, Math.min(1, p.vol));
       this.muted = !!p.muted;
-      if (p.typewriter === false) this.typewriter = false;
     } catch {}
     this.el.volume.value = Math.round(this.vol * 100);
 
@@ -80,7 +78,6 @@ const Player = {
     this.el.hide.addEventListener('click', () => this.setHideMsg(!this.hideMsg));
     this.el.auto.addEventListener('click', () => this.setAuto(!this.auto));
     this.el.mute.addEventListener('click', () => this.setMuted(!this.muted));
-    this.el.type.addEventListener('click', () => this.setTypewriter(!this.typewriter));
     this.el.volume.addEventListener('input', () => {
       this.vol = this.el.volume.value / 100;
       if (this.muted && this.vol > 0) this.muted = false;
@@ -96,7 +93,6 @@ const Player = {
     document.addEventListener('keydown', e => this.onKey(e), true);
     new ResizeObserver(() => this.fit()).observe(this.el.main);
     this.applyVolume();
-    this.setTypewriter(this.typewriter);
   },
 
   // entry: { title, sub, list } — list is the command list of the event page / common event.
@@ -355,7 +351,7 @@ const Player = {
     if (w > this.W && h >= this.H * 0.9 && w <= 4096) { this.grown = true; this.setStage(w, h); }
   },
 
-  // type: the message types itself out (moving forward, with the typewriter on).
+  // type: the message types itself out (moving forward).
   renderMessage(msg, choices, type) {
     const el = this.el;
     el.msg.hidden = !msg && !choices;
@@ -397,7 +393,7 @@ const Player = {
         el.choices.appendChild(b);
       });
     }
-    if (type && this.typewriter && msg && !msg.scroll && msg.text.trim()) this.startTyping(msg.text, !!choices);
+    if (type && msg && !msg.scroll && msg.text.trim()) this.startTyping(msg.text, !!choices);
     else el.choices.hidden = !choices;
   },
 
@@ -439,16 +435,8 @@ const Player = {
     this.typing = null;
   },
 
-  setTypewriter(on) {
-    this.typewriter = on;
-    if (!on) this.endTyping();
-    this.el.type.setAttribute('aria-pressed', on ? 'true' : 'false');
-    this.el.type.title = on ? 'Typewriter text: on (T)' : 'Typewriter text: off (T)';
-    this.savePrefs();
-  },
-
   savePrefs() {
-    try { localStorage.setItem(PLAYER_PREF_KEY, JSON.stringify({ vol: this.vol, muted: this.muted, typewriter: this.typewriter })); } catch {}
+    try { localStorage.setItem(PLAYER_PREF_KEY, JSON.stringify({ vol: this.vol, muted: this.muted })); } catch {}
   },
 
   miss(path) {
@@ -563,7 +551,7 @@ const Player = {
     if (!this.auto || this.anim || this.typing) return;   // endAnim() / endTyping() schedule again
     if (this.i >= this.steps.length - 1 && !this.sceneAt(1)) { this.setAuto(false); return; }
     const msg = this.steps[this.i] && this.steps[this.i].msg;
-    const typed = this.typewriter && msg && !msg.scroll;   // read while it typed
+    const typed = msg && !msg.scroll;   // read while it typed
     const read = msg && !typed ? playerReadMs(msg.text) : 0;
     this.timer = setTimeout(() => this.next(), PLAYER_HOLD + Math.min(15000, read));
   },
@@ -585,7 +573,6 @@ const Player = {
     else if (k === 'End') this.go(this.steps.length - 1);
     else if (k === 'a' || k === 'A') this.setAuto(!this.auto);
     else if (k === 'm' || k === 'M') this.setMuted(!this.muted);
-    else if (k === 't' || k === 'T') this.setTypewriter(!this.typewriter);
     else if (k === 'h' || k === 'H') this.setHideMsg(!this.hideMsg);
     else if (/^[1-9]$/.test(k) && this.steps[this.i] && this.steps[this.i].choices) this.choose(+k - 1);
     else if (k === 'Tab') used = false;

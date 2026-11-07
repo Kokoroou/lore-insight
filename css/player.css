@@ -41,7 +41,6 @@ body.pl-open { overflow: hidden; }
 .pl-btn:disabled { opacity: .35; cursor: default; background: transparent; }
 #pl-hide[aria-pressed="true"] { color: var(--pl-accent); }
 .pl-btn:focus-visible, .pl-side:focus-visible, .pl-choice:focus-visible { outline: 2px solid var(--pl-accent); outline-offset: 2px; }
-#pl-type[aria-pressed="false"] { color: var(--pl-fg2); opacity: .6; }
 .pl-btn-main { background: var(--pl-accent); color: #052e16; }
 .pl-btn-main:hover { background: #86efac; }
 
@@ -111,7 +110,7 @@ body.pl-open { overflow: hidden; }
 /* Controls */
 .pl-bar { flex-shrink: 0; padding: 4px 16px 12px; }
 #pl-seek { display: block; width: 100%; margin: 0 0 4px; accent-color: var(--pl-accent); cursor: pointer; }
-.pl-ctrl { display: flex; align-items: center; gap: 6px; }
+.pl-ctrl, .pl-nav, .pl-extra { display: flex; align-items: center; gap: 6px; }
 #pl-count { margin-left: 8px; font-size: 13px; color: var(--pl-fg2); font-variant-numeric: tabular-nums; }
 .pl-spacer { flex: 1; }
 #pl-vol { width: 96px; accent-color: var(--pl-accent); cursor: pointer; }
@@ -123,5 +122,17 @@ body.pl-open { overflow: hidden; }
 @media (max-width: 600px) {
   .pl-btn { width: 44px; height: 44px; }
   #pl-vol { width: 64px; }
-  .pl-bar { padding: 4px 12px 10px; }
+  /* Phones: the position and the extra buttons go above the seek bar, the
+     playback buttons get their own row, centred. */
+  .pl-bar {
+    padding: 4px 12px 10px;
+    display: grid; grid-template-columns: auto 1fr auto; align-items: center;
+    grid-template-areas: "count . extra" "seek seek seek" "nav nav nav";
+  }
+  .pl-ctrl { display: contents; }
+  .pl-spacer { display: none; }
+  #pl-count { grid-area: count; margin-left: 4px; }
+  .pl-extra { grid-area: extra; }
+  #pl-seek { grid-area: seek; margin: 2px 0 4px; }
+  .pl-nav { grid-area: nav; justify-self: center; }
 }
