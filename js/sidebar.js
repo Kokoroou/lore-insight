@@ -23,6 +23,8 @@ function renderSidebarItems(listEl) {
     return;
   }
 
+  if (searchWords(S.search).length) { renderSearchResults(listEl); return; }
+
   renderScenes(listEl);
 
   if (hasMaps) {
@@ -45,27 +47,105 @@ function renderSidebarItems(listEl) {
 // Scenes (pictures + dialogue, see scenes.js) above the map tree; a click plays one.
 // Scenes of maps show up once the background reading has reached them.
 const SCENES_SHOWN = 30;
+function sceneItem(sc) {
+  const active = sc.kind === 'common'
+    ? S.selectedMapId === 'common' && S.selectedEvId === sc.evId
+    : S.selectedMapId === sc.mapId && S.selectedEvId === sc.evId && S.selectedPage === sc.page;
+  const item = el('div', 'sb-item sb-scene' + (active ? ' active' : ''));
+  item.title = `${sc.where} · ${sc.stats.pictures} pictures · ${sc.stats.messages} messages · click to preview`;
+  item.appendChild(iconEl('play'));
+  item.appendChild(el('span', 'sb-name', sc.name));
+  item.appendChild(el('span', 'sb-count', sc.kind === 'common' ? 'CE' : sc.where));
+  item.addEventListener('click', () => playScene(sc));
+  return item;
+}
+
 function renderScenes(listEl) {
   const scenes = findScenes();
   if (!scenes.length) return;
   listEl.appendChild(el('div', 'sb-section sb-scenes-title', `Scenes · ${scenes.length}`));
   const shown = S.scenesExpanded ? scenes : scenes.slice(0, SCENES_SHOWN);
-  for (const sc of shown) {
-    const active = sc.kind === 'common'
-      ? S.selectedMapId === 'common' && S.selectedEvId === sc.evId
-      : S.selectedMapId === sc.mapId && S.selectedEvId === sc.evId && S.selectedPage === sc.page;
-    const item = el('div', 'sb-item sb-scene' + (active ? ' active' : ''));
-    item.title = `${sc.where} · ${sc.stats.pictures} pictures · ${sc.stats.messages} messages · click to preview`;
-    item.appendChild(iconEl('play'));
-    item.appendChild(el('span', 'sb-name', sc.name));
-    item.appendChild(el('span', 'sb-count', sc.kind === 'common' ? 'CE' : sc.where));
-    item.addEventListener('click', () => playScene(sc));
-    listEl.appendChild(item);
-  }
+  for (const sc of shown) listEl.appendChild(sceneItem(sc));
   if (scenes.length > SCENES_SHOWN) {
     const more = el('button', 'sb-scenes-more', S.scenesExpanded ? 'Show fewer' : `Show all ${scenes.length}`);
     more.type = 'button';
     more.addEventListener('click', () => { S.scenesExpanded = !S.scenesExpanded; renderSidebar(); });
+    listEl.appendChild(more);
+  }
+}
+
+/* ── Search (search.js): results replace the scenes, tree and common events ── */
+function initSearch() {
+  const input = EL.sbSearchInput;
+  let timer = 0;
+  const apply = () => {
+    clearTimeout(timer);
+    if (S.search === input.value) return;
+    S.search = input.value;
+    S.searchExpanded = { scenes: false, events: false };
+    renderSidebar();
+    EL.sidebar.scrollTop = 0;
+  };
+  input.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(apply, 120); });
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      e.stopPropagation();
+      if (input.value) { input.value = ''; apply(); }
+      else input.blur();
+    } else if (e.key === 'Enter') {
+      apply();
+      const first = EL.sbList.querySelector('.sb-result');
+      if (first) first.click();
+    }
+  });
+}
+
+function isTypingTarget(t) {
+  return !!t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName || ''));
+}
+
+function renderSearchResults(listEl) {
+  const { scenes, events } = searchAll(S.search);
+  if (scenes.length) {
+    resultSection(listEl, 'scenes', 'Scenes', scenes, sc => {
+      const item = sceneItem(sc);
+      item.classList.add('sb-result');
+      return item;
+    });
+  }
+  if (events.length) {
+    resultSection(listEl, 'events', 'Events', events, ev => {
+      const active = ev.kind === 'common'
+        ? S.selectedMapId === 'common' && S.selectedEvId === ev.evId
+        : S.selectedMapId === ev.mapId && S.selectedEvId === ev.evId;
+      const item = el('div', 'sb-item sb-result' + (active ? ' active' : ''));
+      item.title = `${ev.name} · ${ev.where}`;
+      item.appendChild(iconEl(ev.kind === 'common' ? 'zap' : 'flow'));
+      item.appendChild(el('span', 'sb-name', ev.name));
+      item.appendChild(el('span', 'sb-count', ev.kind === 'common' ? 'CE' : ev.where));
+      item.addEventListener('click', () => {
+        if (ev.kind === 'common') selectCommonEvent(ev.evId);
+        else selectEvent(ev.mapId, ev.evId);
+      });
+      return item;
+    });
+  }
+  if (!scenes.length && !events.length) {
+    listEl.appendChild(el('div', 'sb-search-note', 'No scene or event matches.'));
+  }
+  if (S.mapFiles.size > 0) {
+    listEl.appendChild(el('div', 'sb-search-note', `Still reading maps (${S.mapFiles.size} left): more results may appear.`));
+  }
+}
+
+function resultSection(listEl, key, title, items, render) {
+  listEl.appendChild(el('div', 'sb-section' + (key === 'scenes' ? ' sb-scenes-title' : ''), `${title} · ${items.length}`));
+  const all = S.searchExpanded[key];
+  for (const it of all ? items : items.slice(0, SEARCH_SHOWN)) listEl.appendChild(render(it));
+  if (items.length > SEARCH_SHOWN) {
+    const more = el('button', 'sb-scenes-more', all ? 'Show fewer' : `Show all ${items.length}`);
+    more.type = 'button';
+    more.addEventListener('click', () => { S.searchExpanded[key] = !all; renderSidebar(); });
     listEl.appendChild(more);
   }
 }

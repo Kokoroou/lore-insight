@@ -2,7 +2,7 @@
 const EL = {};
 document.addEventListener('DOMContentLoaded', () => {
   [
-    'setup','sidebar','sb-list',
+    'setup','sidebar','sb-list','sb-search-input',
     'scan-status','setup-status','event-breadcrumb','page-tabs',
     'event-picker','event-list-grid','detail-panel','detail-body',
     'open-btn','about-btn','about-modal','about-close','theme-toggle',
@@ -248,6 +248,8 @@ function init() {
 
   EL.scenePlay.addEventListener('click', () => { if (S.sceneEntry) openScene(S.sceneEntry); });
 
+  initSearch();
+
   EL.cyFit.addEventListener('click', () => cy?.fit(undefined, 32));
   EL.cyZoomIn.addEventListener('click',  () => cy?.zoom({ level: cy.zoom() * 1.3, renderedPosition: { x: cy.width()/2, y: cy.height()/2 } }));
   EL.cyZoomOut.addEventListener('click', () => cy?.zoom({ level: cy.zoom() / 1.3, renderedPosition: { x: cy.width()/2, y: cy.height()/2 } }));
@@ -273,6 +275,14 @@ function init() {
 
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') EL.aboutModal.classList.remove('open');
+    // "/" jumps to the sidebar search, unless typing somewhere or the player is open.
+    if (e.key === '/' && !e.ctrlKey && !e.metaKey && !e.altKey && !isTypingTarget(e.target)
+        && !EL.sidebar.classList.contains('hidden') && EL.graphView.classList.contains('visible')
+        && !(Player.el && !Player.el.root.hidden)) {
+      e.preventDefault();
+      EL.sbSearchInput.focus();
+      EL.sbSearchInput.select();
+    }
     if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === 'z') { e.preventDefault(); undo(); }
     if ((e.ctrlKey || e.metaKey) && (e.shiftKey && e.key.toLowerCase() === 'z' || e.key.toLowerCase() === 'y')) { e.preventDefault(); redo(); }
   });
