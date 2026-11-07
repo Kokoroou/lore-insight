@@ -3,7 +3,10 @@
    at the game's screen size (scaled to fit), the controls run along the bottom.
    Each step of the timeline (scene-script.js) is one message with the pictures and
    music of that moment. Click / → / Space: next, ←: back, A: auto, M: mute,
-   T: typewriter text, Esc: close.
+   T: typewriter text, H: hide the dialogue, Esc: close.
+   Scenes run on into each other (in the sidebar's order, findScenes()): next on the
+   last message opens the next scene, back on the first one opens the previous scene
+   at its end; Shift+← / Shift+→ jump a whole scene. Auto play carries on.
    Moving forward one step plays it like the game: its animation frames first (picture
    flips and moves, sounds on their frame), then its message. Seeking or going back
    shows the step at once, without sound effects, and stops the ones still playing.
@@ -34,6 +37,7 @@ const Player = {
   anim: null,               // { step, k, timer } while a step's animation plays
   typing: null,             // { chars, n, start, per, raf, choices } while a message types out
   typewriter: true,
+  hideMsg: false,           // H: the dialogue is hidden to see the pictures
   vol: 0.8, muted: false,
   W: SCREEN_MV.width, H: SCREEN_MV.height,
   imgs: new Map(),          // picture id → <img>
@@ -51,7 +55,7 @@ const Player = {
       main: $('pl-main'), frame: $('pl-frame'), stage: $('pl-stage'), pics: $('pl-pics'), fade: $('pl-fade'),
       msg: $('pl-msg'), namebox: $('pl-namebox'), face: $('pl-face'), text: $('pl-text'), choices: $('pl-choices'),
       seek: $('pl-seek'), count: $('pl-count'), auto: $('pl-auto'), mute: $('pl-mute'), volume: $('pl-vol'),
-      type: $('pl-type'),
+      type: $('pl-type'), hide: $('pl-hide'), scenePrev: $('pl-scene-prev'), sceneNext: $('pl-scene-next'),
     };
     // The text is two spans: what has been typed, and the rest laid out but invisible.
     this.el.shown = document.createElement('span');
@@ -67,10 +71,13 @@ const Player = {
     this.el.volume.value = Math.round(this.vol * 100);
 
     $('pl-close').addEventListener('click', () => this.close());
-    $('pl-prev').addEventListener('click', () => this.go(this.i - 1));
+    $('pl-prev').addEventListener('click', () => this.back());
     $('pl-next').addEventListener('click', () => this.next());
-    $('pl-side-prev').addEventListener('click', () => this.go(this.i - 1));
+    $('pl-side-prev').addEventListener('click', () => this.back());
     $('pl-side-next').addEventListener('click', () => this.next());
+    this.el.scenePrev.addEventListener('click', () => this.toScene(-1));
+    this.el.sceneNext.addEventListener('click', () => this.toScene(1));
+    this.el.hide.addEventListener('click', () => this.setHideMsg(!this.hideMsg));
     this.el.auto.addEventListener('click', () => this.setAuto(!this.auto));
     this.el.mute.addEventListener('click', () => this.setMuted(!this.muted));
     this.el.type.addEventListener('click', () => this.setTypewriter(!this.typewriter));
@@ -80,7 +87,11 @@ const Player = {
       this.applyVolume();
     });
     this.el.seek.addEventListener('input', () => this.go(+this.el.seek.value));
-    this.el.stage.addEventListener('click', e => { if (!e.target.closest('.pl-choice')) this.next(); });
+    this.el.stage.addEventListener('click', e => {
+      if (e.target.closest('.pl-choice')) return;
+      if (this.hideMsg) this.setHideMsg(false);   // like the game: a click brings the window back
+      else this.next();
+    });
     this.el.main.addEventListener('click', e => { if (e.target === this.el.main) this.close(); });
     document.addEventListener('keydown', e => this.onKey(e), true);
     new ResizeObserver(() => this.fit()).observe(this.el.main);
@@ -89,23 +100,35 @@ const Player = {
   },
 
   // entry: { title, sub, list } — list is the command list of the event page / common event.
-  open(entry) {
+  // opts.cont: moving on from the scene on screen (toScene): the music, pictures, stage
+  // size, hidden dialogue and auto play carry over, so one scene runs into the next.
+  // opts.atEnd: open on the last message (going back from the next scene).
+  open(entry, opts) {
+    opts = opts || {};
     if (!this.el) this.init();
-    this.stop();
+    const cont = !!opts.cont && !this.el.root.hidden;
+    const auto = cont && this.auto;
+    this.stop(cont);
     this.list = entry.list;
     this.steps = sceneTimeline(entry.list, playerCommon);
     this.missing = new Set();
     this.el.title.textContent = entry.title || 'Scene';
     this.el.sub.textContent = entry.sub || '';
-    this.el.root.hidden = false;
-    document.body.classList.add('pl-open');
-    this.lastFocus = document.activeElement;
+    if (!cont) {
+      this.el.root.hidden = false;
+      document.body.classList.add('pl-open');
+      this.lastFocus = document.activeElement;
+      this.setHideMsg(false);
+      this.grown = false;
+      this.setStage(SCREEN_MV.width, SCREEN_MV.height);
+      if (Media.screen) Media.screen.then(s => { if (!this.el.root.hidden && !this.grown) this.setStage(s.width, s.height); });
+    }
     this.el.root.focus();
-    this.grown = false;
-    this.setStage(SCREEN_MV.width, SCREEN_MV.height);
-    if (Media.screen) Media.screen.then(s => { if (!this.el.root.hidden && !this.grown) this.setStage(s.width, s.height); });
     this.note();
-    this.render(0, true);
+    this.sceneButtons();
+    if (opts.atEnd) this.render(Math.max(0, this.steps.length - 1), false);
+    else this.render(0, true);
+    if (auto) this.setAuto(true);
   },
 
   close() {
@@ -116,11 +139,14 @@ const Player = {
     if (this.lastFocus && this.lastFocus.focus) this.lastFocus.focus();
   },
 
-  // Silence and forget the previous scene.
-  stop() {
+  // Silence and forget the previous scene. cont: the next scene follows on, so the
+  // music and pictures stay until its first step replaces them (no gap, and the same
+  // BGM does not start over).
+  stop(cont) {
     this.stopAnim();
     this.stopTyping();
     this.setAuto(false);
+    if (cont) return;
     for (const k of ['bgm', 'bgs']) this.setLoop(k, null);
     this.stopOneShots();
     for (const img of this.imgs.values()) img.remove();
@@ -159,7 +185,48 @@ const Player = {
     if (this.anim) return this.endAnim();
     if (this.typing) return this.endTyping();
     if (this.i < this.steps.length - 1) this.go(this.i + 1);
-    else this.setAuto(false);
+    else if (!this.toScene(1)) this.setAuto(false);
+  },
+
+  // Back one message; on the first one, the previous scene at its end.
+  back() {
+    if (this.i > 0) this.go(this.i - 1);
+    else this.toScene(-1, true);
+  },
+
+  /* ── Scene to scene: the sidebar's list (findScenes) in order ── */
+  // The scene `delta` away from the one on screen, or null (none, or a page that is
+  // not in the list: a Preview of a page with too few pictures / messages).
+  sceneAt(delta) {
+    const all = findScenes();
+    const k = all.findIndex(sc => sc.list === this.list);
+    return k < 0 ? null : all[k + delta] || null;
+  },
+
+  // Open the next (1) / previous (-1) scene; the graph behind follows it.
+  toScene(delta, atEnd) {
+    const sc = this.sceneAt(delta);
+    if (!sc) return false;
+    playScene(sc, { cont: true, atEnd: !!atEnd });
+    return true;
+  },
+
+  sceneButtons() {
+    const prev = this.sceneAt(-1), next = this.sceneAt(1);
+    this.el.scenePrev.disabled = !prev;
+    this.el.sceneNext.disabled = !next;
+    this.el.scenePrev.title = prev ? `Previous scene: ${prev.name} (Shift+←)` : 'No previous scene';
+    this.el.sceneNext.title = next ? `Next scene: ${next.name} (Shift+→)` : 'No next scene';
+  },
+
+  /* ── Hide the dialogue to see the pictures alone ── */
+  setHideMsg(on) {
+    this.hideMsg = on;
+    this.el.stage.classList.toggle('pl-hide-msg', on);
+    this.el.hide.setAttribute('aria-pressed', on ? 'true' : 'false');
+    this.el.hide.querySelector('use').setAttribute('href', on ? '#i-eye' : '#i-eye-off');
+    this.el.hide.title = on ? 'Show dialogue (H)' : 'Hide dialogue (H)';
+    this.el.hide.setAttribute('aria-label', on ? 'Show dialogue' : 'Hide dialogue');
   },
 
   go(i) {
@@ -494,10 +561,10 @@ const Player = {
   schedule() {
     clearTimeout(this.timer);
     if (!this.auto || this.anim || this.typing) return;   // endAnim() / endTyping() schedule again
-    if (this.i >= this.steps.length - 1) { this.setAuto(false); return; }
-    const step = this.steps[this.i];
-    const typed = this.typewriter && step.msg && !step.msg.scroll;   // read while it typed
-    const read = step.msg && !typed ? playerReadMs(step.msg.text) : 0;
+    if (this.i >= this.steps.length - 1 && !this.sceneAt(1)) { this.setAuto(false); return; }
+    const msg = this.steps[this.i] && this.steps[this.i].msg;
+    const typed = this.typewriter && msg && !msg.scroll;   // read while it typed
+    const read = msg && !typed ? playerReadMs(msg.text) : 0;
     this.timer = setTimeout(() => this.next(), PLAYER_HOLD + Math.min(15000, read));
   },
 
@@ -507,16 +574,19 @@ const Player = {
     const k = e.key;
     let used = true;
     if (k === 'Escape') this.close();
+    else if (e.shiftKey && k === 'ArrowRight') this.toScene(1);
+    else if (e.shiftKey && k === 'ArrowLeft') this.toScene(-1);
     else if (k === 'ArrowRight' || k === ' ' || k === 'Enter' || k === 'PageDown') {
       if ((k === ' ' || k === 'Enter') && e.target.closest && e.target.closest('button')) return;   // the button's own action
       this.next();
     }
-    else if (k === 'ArrowLeft' || k === 'PageUp') this.go(this.i - 1);
+    else if (k === 'ArrowLeft' || k === 'PageUp') this.back();
     else if (k === 'Home') this.go(0);
     else if (k === 'End') this.go(this.steps.length - 1);
     else if (k === 'a' || k === 'A') this.setAuto(!this.auto);
     else if (k === 'm' || k === 'M') this.setMuted(!this.muted);
     else if (k === 't' || k === 'T') this.setTypewriter(!this.typewriter);
+    else if (k === 'h' || k === 'H') this.setHideMsg(!this.hideMsg);
     else if (/^[1-9]$/.test(k) && this.steps[this.i] && this.steps[this.i].choices) this.choose(+k - 1);
     else if (k === 'Tab') used = false;
     else used = !(e.ctrlKey || e.metaKey);   // app shortcuts (undo …) stay off while the player is open
@@ -529,7 +599,8 @@ function playerCommon(id) {
   return cev ? cev.list : null;
 }
 
-// Opens a scene from the sidebar, the event picker or the toolbar.
-function openScene(entry) {
-  Player.open(entry);
+// Opens a scene from the sidebar, the event picker, the toolbar or the player itself
+// (opts: see Player.open).
+function openScene(entry, opts) {
+  Player.open(entry, opts);
 }
