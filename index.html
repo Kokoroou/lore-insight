@@ -99,6 +99,7 @@
   <symbol id="i-skip-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 20L9 12l10-8v16zM5 19V5"/></symbol>
   <symbol id="i-skip-fwd" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4l10 8-10 8V4zM19 5v14"/></symbol>
   <symbol id="i-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24M10.73 5.08A10.4 10.4 0 0 1 12 5c6.5 0 10 7 10 7a13.2 13.2 0 0 1-1.67 2.68M6.61 6.61A13.5 13.5 0 0 0 2 12s3.5 7 10 7a9.7 9.7 0 0 0 5.39-1.61M2 2l20 20"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></symbol>
   <symbol id="i-bulb" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 00-3.5 10.9c.6.5 1 1.2 1 2V16h5v-.1c0-.8.4-1.5 1-2A6 6 0 0012 3z"/></symbol>
 </svg>
 
@@ -132,6 +133,11 @@
   <!-- ── Sidebar ── -->
   <nav id="sidebar" class="hidden" aria-label="Maps and common events">
     <div id="sb-header">Navigator</div>
+    <div id="sb-search" role="search">
+      <svg width="16" height="16" aria-hidden="true"><use href="#i-search"/></svg>
+      <label for="sb-search-input" class="sr-only">Search scenes and events</label>
+      <input type="search" id="sb-search-input" placeholder="Search scenes and events" autocomplete="off" spellcheck="false" title="Search scenes and events (/)">
+    </div>
     <div id="sb-list"></div>
   </nav>
   <div id="sb-resizer" class="hidden"></div>
@@ -260,6 +266,7 @@
         <li>Pick a map from the sidebar, then click an event to view its command flow as a node graph.</li>
         <li>Use the page tabs to switch between event pages. Click any node to inspect its full content in the right panel.</li>
         <li>Common Events are listed below the maps in the sidebar.</li>
+        <li>Type in the search box at the top of the sidebar (or press <strong>/</strong>) to find scenes and events by name.</li>
         <li>Scenes (pictures with dialogue) are listed at the top of the sidebar: click one, or press <strong>Preview</strong>, to play it like in the game.</li>
       </ol>
       <p class="about-more">Want the game's images and music? Open <a href="https://makerlens.kokoroou.workers.dev/assets/">MakerLens Assets</a>.</p>
@@ -456,6 +463,7 @@
 <script src="js/scene-script.js"></script>
 <script src="js/media.js"></script>
 <script src="js/player.js"></script>
+<script src="js/search.js"></script>
 <script src="js/sidebar.js"></script>
 <script src="js/history.js"></script>
 <script src="js/loadui.js"></script>

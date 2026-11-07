@@ -104,3 +104,29 @@
   font-size: 12px; color: var(--a); background: none; border: 0; cursor: pointer;
 }
 .sb-scenes-more:hover { text-decoration: underline; }
+
+/* Search box above the lists (search.js); results replace the tree while it has text */
+#sb-search {
+  position: sticky; top: 0; z-index: 1;
+  display: flex; align-items: center; gap: 8px;
+  margin: 0 -8px; padding: 8px 8px 6px;
+  background: var(--s1);
+  color: var(--t3);
+  flex-shrink: 0;
+}
+#sb-search svg { position: absolute; left: 18px; pointer-events: none; }
+#sb-search-input {
+  width: 100%; height: 36px;
+  padding: 0 10px 0 34px;
+  font: inherit; font-size: 13px;
+  color: var(--t);
+  background: var(--s2);
+  border: 1px solid var(--bd);
+  border-radius: var(--r-sm);
+  outline: none;
+  transition: border-color .15s var(--ease), box-shadow .15s var(--ease);
+}
+#sb-search-input::placeholder { color: var(--t3); }
+#sb-search-input:focus { border-color: var(--a); box-shadow: 0 0 0 3px var(--a20); }
+@media (max-width: 600px) { #sb-search-input { height: 44px; font-size: 16px; } }
+.sb-search-note { padding: 10px 8px; font-size: 12px; color: var(--t3); }

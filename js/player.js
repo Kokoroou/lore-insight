@@ -18,8 +18,8 @@
 const PLAYER_PREF_KEY = 'mle-player';      // { vol, muted } of this viewer (never sent)
 const PLAYER_FACE = 144;                   // face graphics: 4×2 cells of 144px
 const PLAYER_MSG_H = 180;                  // message window: 4 lines, like the game
-const PLAYER_WPM = 250;                    // average reading speed: typing and auto play
-const PLAYER_HOLD = 1200;                  // auto play: pause after a message is read (ms)
+const PLAYER_WPM = 300;                    // reading speed: typing and auto play
+const PLAYER_HOLD = 2000;                  // auto play: time to read / look at the CG once a message is shown (ms)
 const PLAYER_CJK = /[\u3040-\u30ff\u3400-\u9fff\uf900-\ufaff\uac00-\ud7af\uff66-\uff9f]/g;
 
 // How long a message takes to read at PLAYER_WPM: words split by spaces, and two
