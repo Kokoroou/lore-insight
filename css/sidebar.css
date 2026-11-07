@@ -95,3 +95,8 @@
 #sb-resizer:hover, #sb-resizer.dragging { background: var(--a40); }
 #sb-resizer.hidden { display: none; }
 .sb-count.pending { opacity: .6; }   /* Map###.json not read yet (loader.js) */
+
+/* Gallery & Memories shortcuts above the map tree */
+.sb-hl-title { color: var(--a); }
+.sb-hl .sb-icon { color: var(--a); }
+.sb-hl-more { padding: 4px 8px; font-size: 11px; color: var(--t3); }

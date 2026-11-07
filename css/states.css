@@ -19,3 +19,6 @@
 /* ── Dimmed event cards ──────────────────────────────── */
 .ev-card.ev-empty { opacity: .6; border-style: dashed; }
 .ev-card.ev-empty .ev-card-meta::after { content: ' · no flow'; color: var(--t3); }
+
+.ev-card.ev-hl { border-color: var(--a40); }
+.ev-card.ev-hl { box-shadow: inset 3px 0 0 var(--a); }
