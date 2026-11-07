@@ -78,6 +78,11 @@ function renderScenes(listEl) {
 function initSearch() {
   const input = EL.sbSearchInput;
   let timer = 0;
+  // Phones: a short placeholder, the long one does not fit.
+  const phone = matchMedia('(max-width: 600px)');
+  const placeholder = () => { input.placeholder = phone.matches ? 'Search' : 'Search scenes and events'; };
+  placeholder();
+  phone.addEventListener('change', placeholder);
   const apply = () => {
     clearTimeout(timer);
     if (S.search === input.value) return;

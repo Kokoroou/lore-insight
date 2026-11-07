@@ -95,7 +95,6 @@
   <symbol id="i-volume" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 5v14l-4.5-4.5H4z"/><path d="M15.5 9a4 4 0 010 6M18.5 6.5a7.5 7.5 0 010 11"/></symbol>
   <symbol id="i-mute" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 5v14l-4.5-4.5H4z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></symbol>
   <symbol id="i-film" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 4v16M17 4v16M3 9h4M3 15h4M17 9h4M17 15h4"/></symbol>
-  <symbol id="i-type" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3M9 20h6M12 4v16"/></symbol>
   <symbol id="i-skip-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 20L9 12l10-8v16zM5 19V5"/></symbol>
   <symbol id="i-skip-fwd" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4l10 8-10 8V4zM19 5v14"/></symbol>
   <symbol id="i-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24M10.73 5.08A10.4 10.4 0 0 1 12 5c6.5 0 10 7 10 7a13.2 13.2 0 0 1-1.67 2.68M6.61 6.61A13.5 13.5 0 0 0 2 12s3.5 7 10 7a9.7 9.7 0 0 0 5.39-1.61M2 2l20 20"/></symbol>
@@ -430,17 +429,20 @@
   <div class="pl-bar">
     <input type="range" id="pl-seek" min="0" max="0" value="0" step="1" aria-label="Line">
     <div class="pl-ctrl">
+      <div class="pl-nav">
       <button type="button" class="pl-btn" id="pl-scene-prev" title="Previous scene (Shift+←)" aria-label="Previous scene"><svg width="20" height="20" aria-hidden="true"><use href="#i-skip-back"/></svg></button>
       <button type="button" class="pl-btn" id="pl-prev" title="Previous (←)" aria-label="Previous line"><svg width="20" height="20" aria-hidden="true"><use href="#i-left"/></svg></button>
       <button type="button" class="pl-btn pl-btn-main" id="pl-auto" title="Auto play (A)" aria-label="Auto play" aria-pressed="false"><svg width="20" height="20" aria-hidden="true"><use href="#i-play"/></svg></button>
       <button type="button" class="pl-btn" id="pl-next" title="Next (→ / Space)" aria-label="Next line"><svg width="20" height="20" aria-hidden="true"><use href="#i-right"/></svg></button>
       <button type="button" class="pl-btn" id="pl-scene-next" title="Next scene (Shift+→)" aria-label="Next scene"><svg width="20" height="20" aria-hidden="true"><use href="#i-skip-fwd"/></svg></button>
+      </div>
       <span id="pl-count" aria-live="polite"></span>
       <span class="pl-spacer"></span>
+      <div class="pl-extra">
       <button type="button" class="pl-btn" id="pl-hide" title="Hide dialogue (H)" aria-label="Hide dialogue" aria-pressed="false"><svg width="20" height="20" aria-hidden="true"><use href="#i-eye-off"/></svg></button>
-      <button type="button" class="pl-btn" id="pl-type" title="Typewriter text (T)" aria-label="Typewriter text" aria-pressed="true"><svg width="20" height="20" aria-hidden="true"><use href="#i-type"/></svg></button>
       <button type="button" class="pl-btn" id="pl-mute" title="Mute (M)" aria-label="Mute" aria-pressed="false"><svg width="20" height="20" aria-hidden="true"><use href="#i-volume"/></svg></button>
       <input type="range" id="pl-vol" min="0" max="100" value="80" step="1" aria-label="Volume">
+      </div>
     </div>
   </div>
 </div>
