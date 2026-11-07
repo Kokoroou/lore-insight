@@ -45,6 +45,16 @@ test('move picture updates place, music carries over, sounds belong to their ste
   assert.equal(steps[2].bgm, null);
 });
 
+test('Stop SE travels with the step sounds, after the sounds before it', () => {
+  const { timeline } = setup();
+  const steps = timeline([
+    c(250, 0, [{ name: 'Rain', volume: 90, pitch: 100, pan: 0 }]), ...say(['A']),
+    c(251, 0, []), c(249, 0, [{ name: 'Fanfare', volume: 90, pitch: 100, pan: 0 }]), ...say(['B']),
+  ]);
+  assert.deepEqual(steps[0].sounds.map(s => [s.kind, s.name]), [['se', 'Rain']]);
+  assert.deepEqual(steps[1].sounds.map(s => [s.kind, s.stop ? 'stop' : s.name]), [['se', 'stop'], ['me', 'Fanfare']]);
+});
+
 test('picture changes split by waits become animation frames, sounds keep their frame', () => {
   const { timeline } = setup();
   const se = name => c(250, 0, [{ name, volume: 90, pitch: 100, pan: 0 }]);

@@ -6,7 +6,10 @@
    T: typewriter text, Esc: close.
    Moving forward one step plays it like the game: its animation frames first (picture
    flips and moves, sounds on their frame), then its message. Seeking or going back
-   shows the step at once, without sound effects. A click during an animation skips it.
+   shows the step at once, without sound effects, and stops the ones still playing.
+   Like the game, sound effects run on into the next message; an ME holds the BGM
+   until it ends. A click during an animation
+   skips it (the skipped frames stay silent).
    Messages type themselves out at reading speed (PLAYER_WPM; T turns it off); a click
    while typing shows the whole message, like the game. */
 const PLAYER_PREF_KEY = 'mle-player';      // { vol, muted } of this viewer (never sent)
@@ -35,7 +38,9 @@ const Player = {
   W: SCREEN_MV.width, H: SCREEN_MV.height,
   imgs: new Map(),          // picture id → <img>
   loops: { bgm: null, bgs: null },   // { name, audio, token }
-  oneShots: new Set(),
+  oneShots: new Set(),               // SE / ME playing now (each tagged with its kind)
+  me: null,                          // the ME playing now: the BGM waits for it, like the game
+  soundGen: 0,                       // bumped on every step change: late loads of old sounds stay silent
   missing: new Set(),
   lastFocus: null,
 
@@ -117,8 +122,7 @@ const Player = {
     this.stopTyping();
     this.setAuto(false);
     for (const k of ['bgm', 'bgs']) this.setLoop(k, null);
-    for (const a of this.oneShots) a.pause();
-    this.oneShots.clear();
+    this.stopOneShots();
     for (const img of this.imgs.values()) img.remove();
     this.imgs.clear();
   },
@@ -182,6 +186,9 @@ const Player = {
     this.el.count.textContent = this.steps.length ? `${i + 1} / ${this.steps.length}` : '0 / 0';
     if (!step) { this.el.msg.hidden = true; return; }
 
+    // Like the game, SE / ME run on into the next message. Seeking or going back is
+    // not something the game does: it silences them and the loads on the way.
+    if (!play) this.stopOneShots();
     this.el.fade.classList.toggle('on', !!step.fade);
     this.setLoop('bgm', step.bgm);
     this.setLoop('bgs', step.bgs);
@@ -223,7 +230,10 @@ const Player = {
     if (!a) return;
     clearTimeout(a.timer);
     this.anim = null;
-    for (const s of a.step.sounds) if (s.at >= a.k) this.playOnce(s);
+    // Skipped frames stay silent (their sounds all at once would pile up); the sounds
+    // that come with the message still play.
+    const last = a.step.anim.length;
+    for (const s of a.step.sounds) if (s.at === last) this.playOnce(s);
     this.renderPictures(a.step.pics);
     this.renderMessage(a.step.msg, a.step.choices, true);
     this.schedule();
@@ -386,7 +396,7 @@ const Player = {
   setLoop(kind, a) {
     const cur = this.loops[kind];
     if (cur && a && cur.name === a.name) { cur.spec = a; if (cur.audio) cur.audio.volume = this.level(a); return; }
-    if (cur) { if (cur.audio) cur.audio.pause(); this.loops[kind] = null; }
+    if (cur) { if (cur.audio) { cur.audio.pause(); cur.audio.removeAttribute('src'); cur.audio.load(); } this.loops[kind] = null; }
     if (!a) return;
     const slot = { name: a.name, spec: a, audio: null };
     this.loops[kind] = slot;
@@ -395,19 +405,54 @@ const Player = {
       if (!u) return this.miss(`audio/${kind}/${a.name}`);
       slot.audio = this.makeAudio(u, slot.spec);
       slot.audio.loop = true;
-      slot.audio.play().catch(() => {});
+      if (!(kind === 'bgm' && this.me)) slot.audio.play().catch(() => {});
     });
   },
 
+  // SE overlap like the game; a new ME replaces the one playing and holds the BGM
+  // until it ends (AudioManager.playMe). Stop SE (251) arrives as { stop: true }.
   playOnce(s) {
+    if (s.stop) return this.stopOneShots('se');
+    const gen = this.soundGen;
     Media.audio('audio/' + s.kind, s.name).then(u => {
-      if (this.el.root.hidden) return;
+      if (this.el.root.hidden || gen !== this.soundGen) return;
       if (!u) return this.miss(`audio/${s.kind}/${s.name}`);
       const a = this.makeAudio(u, s);
+      a.dataset.kind = s.kind;
+      if (s.kind === 'me') {
+        this.stopOneShots('me');
+        this.me = a;
+        const bgm = this.loops.bgm;
+        if (bgm && bgm.audio) bgm.audio.pause();
+      }
       this.oneShots.add(a);
-      a.addEventListener('ended', () => this.oneShots.delete(a));
-      a.play().catch(() => {});
+      const done = () => {
+        if (!this.oneShots.delete(a)) return;
+        if (this.me === a) { this.me = null; this.resumeBgm(); }
+      };
+      a.addEventListener('ended', done);
+      a.addEventListener('error', done);
+      a.play().catch(done);
     });
+  },
+
+  // Stop the SE / ME playing (kind: only that kind), and the loads still on the way.
+  stopOneShots(kind) {
+    if (!kind) this.soundGen++;
+    for (const a of [...this.oneShots]) {
+      if (kind && a.dataset.kind !== kind) continue;
+      a.pause();
+      a.removeAttribute('src');
+      a.load();
+      this.oneShots.delete(a);
+      if (this.me === a) this.me = null;
+    }
+    if (!this.me) this.resumeBgm();
+  },
+
+  resumeBgm() {
+    const bgm = this.loops.bgm;
+    if (bgm && bgm.audio && bgm.audio.paused && !this.el.root.hidden) bgm.audio.play().catch(() => {});
   },
 
   makeAudio(url, spec) {
