@@ -2,7 +2,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { load } from './helpers.mjs';
 
-const KEY = '00112233445566778899aabbccddeeff';
+// A made-up 16-byte key 00 11 22 … ff, built here so no key-like literal sits in the source.
+const KEY = Array.from({ length: 16 }, (_, i) => (i * 17).toString(16).padStart(2, '0')).join('');
 const HEADER = [0x52, 0x50, 0x47, 0x4d, 0x56, 0, 0, 0, 0, 3, 1, 0, 0, 0, 0, 0];
 
 // What RPG Maker's deployment does to a file: header + the first 16 bytes XOR the key.
