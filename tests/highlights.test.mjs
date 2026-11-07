@@ -8,7 +8,7 @@ function setup() {
   run(`var S = {
     mapInfos: { 1: { name: 'Town' }, 2: { name: 'Memory Room' } },
     mapFiles: new Map([[2, {}]]),
-    maps: new Map([[1, { mapId: 1, mapName: 'Town', events: [
+    maps: new Map([[2, { mapId: 2, mapName: 'Memory Room', events: [{ id: 9, name: '回想用' }] }], [1, { mapId: 1, mapName: 'Town', events: [
       { id: 1, name: 'Guard' }, { id: 2, name: 'Crystal Shard 03' }, { id: 3, name: '回想ルーム' }] }]]),
     commonEvents: [{ id: 5, name: 'Gallery Open' }, { id: 6, name: 'Heal' }]
   }`);
@@ -17,13 +17,13 @@ function setup() {
 
 test('isHighlightName matches gallery/memory words in several languages', () => {
   const run = setup();
-  for (const n of ['Gallery', 'Memory Crystal', 'mảnh pha lê', 'Ký ức', '回想', 'ギャラリー'])
+  for (const n of ['Gallery', 'Memory Crystal', 'mảnh pha lê', 'Ký ức', 'Phòng Hồi ức', 'Phòng Hồi ức'.normalize('NFD'), 'Thư viện CG', '回想', 'ギャラリー'])
     assert.equal(run(`isHighlightName(${JSON.stringify(n)})`), true, n);
-  for (const n of ['Guard', 'Heal', 'Cgi', ''])
+  for (const n of ['Guard', 'Heal', 'Cgi', 'Thư viện Dinh thự', 'St. Lumina Memorial Park', '回復', ''])
     assert.equal(run(`isHighlightName(${JSON.stringify(n)})`), false, n);
 });
 
-test('findHighlights collects maps (even unread), events and common events', () => {
+test('findHighlights collects maps (even unread), events outside pinned maps and common events', () => {
   const h = JSON.parse(JSON.stringify(setup()('findHighlights()')));
   assert.deepEqual(h.maps.map(m => m.mapId), [2]);
   assert.deepEqual(h.events.map(e => e.evId), [2, 3]);
