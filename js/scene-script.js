@@ -427,9 +427,10 @@ function scenePlace(p, st) {
 }
 
 // Text codes: actor names resolved, the speaker of "\n<Name>" (Yanfly message core)
-// lifted out, every other control code (\C[2], \I[5], \., \| …) dropped.
+// lifted out, HTML-like tags handled by textTags() (<br> = new line), every other
+// control code (\C[2], \I[5], \., \| …) dropped.
 function sceneText(str) {
-  return String(str || '')
+  return textTags(str)
     .replace(/\\\\/g, '\u0000')
     .replace(/\\[Nn]\[(\d+)\]/g, (_, n) => (typeof S !== 'undefined' && S.actors[+n]) || '')
     .replace(/\\[Vv]\[(\d+)\]/g, '?')

@@ -19,8 +19,8 @@ function describeCondition(params) {
 }
 
 function resolveTextCodes(str) {
-  if (!str || typeof S === 'undefined') return str || '';
-  return str
+  if (!str || typeof S === 'undefined') return str ? textTags(str) : '';
+  return textTags(str)
     .replace(/\\[Nn]\[(\d+)\]/g, (_, n) => S.actors[+n] || `\\N[${n}]`)
     .replace(/\\[Vv]\[(\d+)\]/g, (_, n) => {
       const name = S.variables[+n];

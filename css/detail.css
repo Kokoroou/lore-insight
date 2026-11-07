@@ -43,6 +43,7 @@
 .detail-speaker { font-size: 14px; font-weight: 600; color: var(--a); }
 .detail-lines, .detail-choices { display: flex; flex-direction: column; gap: 6px; }
 .detail-line, .detail-choice-item {
+  white-space: pre-line;
   font-size: 13px; color: var(--t2); line-height: 1.6;
   padding: 8px 12px;
   background: var(--s2); border: 1px solid var(--bd); border-radius: var(--r);
