@@ -85,9 +85,13 @@ function showEventPicker(mapId) {
   const grid = EL.eventListGrid;
   grid.innerHTML = '';
 
-  for (const ev of mapData.events) {
+  // Gallery / recollection / memory events first (stable: the rest keeps map order).
+  const events = mapData.events.map(ev => ({ ev, hl: isHighlightName(ev.name) }))
+    .sort((a, b) => b.hl - a.hl).map(x => x.ev);
+  for (const ev of events) {
+    const hl = isHighlightName(ev.name);
     const empty = !ev.pages.some(page => page.list.some(cmd => VISIBLE_CODES.has(cmd.code)));
-    const card = el('button', empty ? 'ev-card ev-empty' : 'ev-card');
+    const card = el('button', 'ev-card' + (empty ? ' ev-empty' : '') + (hl ? ' ev-hl' : ''));
     card.type = 'button';
     card.appendChild(el('div', 'ev-card-name', ev.name));
     card.appendChild(el('div', 'ev-card-meta', `ID: ${ev.id} · (${ev.x},${ev.y}) · ${ev.pages.length} page${ev.pages.length !== 1 ? 's' : ''}`));

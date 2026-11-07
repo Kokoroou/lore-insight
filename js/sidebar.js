@@ -23,6 +23,8 @@ function renderSidebarItems(listEl) {
     return;
   }
 
+  renderHighlights(listEl);
+
   if (hasMaps) {
     listEl.appendChild(el('div', 'sb-section', 'Maps'));
     renderMapTree(listEl);
@@ -38,6 +40,28 @@ function renderSidebarItems(listEl) {
       listEl.appendChild(item);
     }
   }
+}
+
+// Gallery / recollection / memory entries pinned above the map tree (see highlights.js).
+const HIGHLIGHT_MAX = 40;
+function renderHighlights(listEl) {
+  const h = findHighlights();
+  if (h.total === 0) return;
+  listEl.appendChild(el('div', 'sb-section sb-hl-title', 'Gallery & Memories'));
+  let shown = 0;
+  const add = (icon, label, sub, active, onClick) => {
+    if (shown++ >= HIGHLIGHT_MAX) return;
+    const item = el('div', 'sb-item sb-hl' + (active ? ' active' : ''));
+    item.appendChild(iconEl(icon));
+    item.appendChild(el('span', 'sb-name', label));
+    if (sub) item.appendChild(el('span', 'sb-count', sub));
+    item.addEventListener('click', onClick);
+    listEl.appendChild(item);
+  };
+  for (const m of h.maps) add('map', m.name, '', S.selectedMapId === m.mapId && S.selectedEvId == null, () => selectMap(m.mapId));
+  for (const c of h.commons) add('zap', c.name, 'Common', S.selectedMapId === 'common' && S.selectedEvId === c.evId, () => selectCommonEvent(c.evId));
+  for (const e of h.events) add('zap', e.name, e.mapName, S.selectedMapId === e.mapId && S.selectedEvId === e.evId, () => selectEvent(e.mapId, e.evId));
+  if (h.total > HIGHLIGHT_MAX) listEl.appendChild(el('div', 'sb-hl-more', `+${h.total - HIGHLIGHT_MAX} more`));
 }
 
 function renderMapTree(container) {
